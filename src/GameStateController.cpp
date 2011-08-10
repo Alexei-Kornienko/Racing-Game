@@ -32,7 +32,6 @@ bool GameStateController::OnEvent(const SEvent & event)
 			this->newGame();
 			break;
 		case MENU_OPTIONS:
-			this->pause();
 			break;
 		case MENU_EXIT:
 			this->exit();
@@ -100,7 +99,8 @@ void GameStateController::pause()
 		}
 		device->getCursorControl()->setVisible(false);
 		device->getCursorControl()->setPosition(
-			vector2df(size.Width>>1, size.Height>>1)
+			(s32)(size.Width>>1),
+			(s32)(size.Height>>1)
 		);
 		this->camera->setInputReceiverEnabled(true);
 		this->guienv->clear();
@@ -205,10 +205,10 @@ void GameStateController::newGame()
 
 	ISceneNode * skydome = this->smgr->addSkyDomeSceneNode(
 		this->driver->getTexture("res/skydome.jpg"),
-		64,
-		32,
-		0.95f,
-		1.5f,
+		16,
+		8,
+		0.75f,
+		1.2f,
 		90.f
 	);
 

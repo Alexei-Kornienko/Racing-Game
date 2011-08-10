@@ -1,0 +1,10 @@
+To compile project you need to have Irrlicht installed:
+http://irrlicht.sourceforge.net/
+
+Include path:
+irrlicht/include
+
+Libs:
+Irrlicht
+GL
+GLU

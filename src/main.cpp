@@ -11,7 +11,7 @@ IrrlichtDevice * device;
 
 int initWindow() {
 	device = createDevice(
-		video::EDT_SOFTWARE,
+		video::EDT_OPENGL,
 		dimension2d<u32>(800, 600),
 		16,
 		false,
