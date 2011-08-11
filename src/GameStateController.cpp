@@ -212,8 +212,23 @@ void GameStateController::newGame()
 		90.f
 	);
 
-	IAnimatedMesh * mesh = this->smgr->getMesh("res/car.3DS");
-	IAnimatedMeshSceneNode * node = this->smgr->addAnimatedMeshSceneNode(mesh);
+	IAnimatedMesh * mesh = this->smgr->getMesh("res/car.obj");
+	IAnimatedMeshSceneNode * node = this->smgr->addAnimatedMeshSceneNode(
+		mesh
+//		0,-1,
+//		vector3df(0,0,0),
+//		vector3df(0,0,0),
+//		vector3df(0.05f,0.05f,0.05f),
+//		false
+	);
+//	IAnimatedMeshSceneNode * node = this->smgr->addAnimatedMeshSceneNode(
+//		mesh,
+//		0,-1,
+//		vector3df(0,0,0),
+//		vector3df(0,0,0),
+//		vector3df(0.05f,0.05f,0.05f),
+//		false
+//	);
 
 //	IAnimatedMesh * wheel = this->smgr->getMesh("res/cleanwheel_01.3DS");
 //	this->smgr->addAnimatedMeshSceneNode(
