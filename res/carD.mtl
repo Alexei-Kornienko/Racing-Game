@@ -1,0 +1,17 @@
+# Blender3D MTL File: 
+# Material Count: 1
+newmtl 01___CarD
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.5882 0.5882 0.5882
+	Kd 0.5882 0.5882 0.5882
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka carD.tga
+	map_Kd carD.tga
+
+

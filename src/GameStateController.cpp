@@ -212,31 +212,11 @@ void GameStateController::newGame()
 		90.f
 	);
 
-	IAnimatedMesh * mesh = this->smgr->getMesh("res/car.obj");
-	IAnimatedMeshSceneNode * node = this->smgr->addAnimatedMeshSceneNode(
-		mesh
-//		0,-1,
-//		vector3df(0,0,0),
-//		vector3df(0,0,0),
-//		vector3df(0.05f,0.05f,0.05f),
-//		false
-	);
-//	IAnimatedMeshSceneNode * node = this->smgr->addAnimatedMeshSceneNode(
-//		mesh,
-//		0,-1,
-//		vector3df(0,0,0),
-//		vector3df(0,0,0),
-//		vector3df(0.05f,0.05f,0.05f),
-//		false
-//	);
+	IAnimatedMesh * mesh = this->smgr->getMesh("res/carC.obj");
+	IAnimatedMeshSceneNode * node = this->smgr->addAnimatedMeshSceneNode(mesh);
 
-//	IAnimatedMesh * wheel = this->smgr->getMesh("res/cleanwheel_01.3DS");
-//	this->smgr->addAnimatedMeshSceneNode(
-//		wheel,
-//		node,
-//		-1,
-//		vector3df(0.306f, -0.619f, -0.198f)
-//	);
+	IAnimatedMesh * wheelMesh = this->smgr->getMesh("res/wheel.obj");
+	IAnimatedMeshSceneNode * wheelNode = this->smgr->addAnimatedMeshSceneNode(wheelMesh);
 
 	// add camera
 	this->camera = this->smgr->addCameraSceneNodeFPS(0,100.0f,0.01f);
