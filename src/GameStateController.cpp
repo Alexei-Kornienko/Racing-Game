@@ -212,12 +212,35 @@ void GameStateController::newGame()
 		90.f
 	);
 
-	IAnimatedMesh * mesh = this->smgr->getMesh("res/carC.obj");
-	IAnimatedMeshSceneNode * node = this->smgr->addAnimatedMeshSceneNode(mesh);
+	IAnimatedMesh * mesh = this->smgr->getMesh("res/carD.obj");
+	IAnimatedMeshSceneNode * carModel = this->smgr->addAnimatedMeshSceneNode(mesh);
 
 	IAnimatedMesh * wheelMesh = this->smgr->getMesh("res/wheel.obj");
-	IAnimatedMeshSceneNode * wheelNode = this->smgr->addAnimatedMeshSceneNode(wheelMesh);
+	IAnimatedMeshSceneNode * frWheel = this->smgr->addAnimatedMeshSceneNode(
+		wheelMesh, 0, -1,
+		vector3df(0.3065f, -0.2235f, 0.619f)
+	);
 
+	IAnimatedMeshSceneNode * flWheel = this->smgr->addAnimatedMeshSceneNode(
+		wheelMesh, 0, -1,
+		vector3df(-0.3065f, -0.2235f, 0.619f)
+	);
+	IAnimatedMeshSceneNode * brWheel = this->smgr->addAnimatedMeshSceneNode(
+		wheelMesh, 0, -1,
+		vector3df(0.3065f, -0.2235f, -0.55f)
+	);
+	IAnimatedMeshSceneNode * blWheel = this->smgr->addAnimatedMeshSceneNode(
+		wheelMesh, 0, -1,
+		vector3df(-0.3065f, -0.2235f, -0.55f)
+	);
+
+	carModel->addChild(frWheel);
+	carModel->addChild(flWheel);
+	carModel->addChild(brWheel);
+	carModel->addChild(blWheel);
+
+	frWheel->setRotation(vector3df(0,45,0));
+	flWheel->setRotation(vector3df(0,45,0));
 	// add camera
 	this->camera = this->smgr->addCameraSceneNodeFPS(0,100.0f,0.01f);
 	this->camera->setPosition(core::vector3df(0,10,-10));

@@ -1,6 +1,6 @@
 # Blender3D MTL File: 
 # Material Count: 1
-newmtl 02___Wheel
+newmtl 01___Wheel
 	Ns 10.0000
 	Ni 1.5000
 	d 1.0000
@@ -13,4 +13,5 @@ newmtl 02___Wheel
 	Ke 0.0000 0.0000 0.0000
 	map_Ka wheel.tga
 	map_Kd wheel.tga
+
 
