@@ -212,6 +212,9 @@ void GameStateController::newGame()
 		90.f
 	);
 
+	IAnimatedMesh * floor = this->smgr->getMesh("res/floor.obj");
+	IAnimatedMeshSceneNode * floorNode = this->smgr->addAnimatedMeshSceneNode(floor);
+
 	IAnimatedMesh * mesh = this->smgr->getMesh("res/carD.obj");
 	IAnimatedMeshSceneNode * carModel = this->smgr->addAnimatedMeshSceneNode(mesh);
 

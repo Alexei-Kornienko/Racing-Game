@@ -1,6 +1,6 @@
-# Blender3D MTL File: 
+# Blender3D MTL File: floor.blend
 # Material Count: 1
-newmtl 01___Wheel
+newmtl 01___Floor
 	Ns 10.0000
 	Ni 1.5000
 	d 1.0000
