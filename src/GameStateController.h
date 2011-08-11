@@ -9,6 +9,7 @@
 #define CONTROLLER_H_
 
 #include "racingGame.h"
+#include "Car.h"
 
 class GameStateController : public IEventReceiver {
 public:
@@ -43,6 +44,8 @@ private:
 	bool paused;
 
 	ICameraSceneNode * camera;
+
+	Car * car;
 
 	// We use this array to store the current state of each key
 	bool keysDown[KEY_KEY_CODES_COUNT];

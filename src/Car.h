@@ -12,20 +12,49 @@
 
 class Car {
 public:
-	Car();
+	Car(ISceneManager *);
 	~Car();
 	void update(u32 timeSpan);
 
+	void doAccelerate();
+	void doBrake();
+	void doTurnLeft();
+	void doTurnRight();
+
 protected:
+	IAnimatedMeshSceneNode * carNode;
+
+	IAnimatedMeshSceneNode * wheelFL;
+	IAnimatedMeshSceneNode * wheelFR;
+	IAnimatedMeshSceneNode * wheelBL;
+	IAnimatedMeshSceneNode * wheelBR;
+
+	bool floatEqual(float, float);
+
 private:
-	vector2df position;
-	vector2df direction;
+	void initModels(ISceneManager *);
+
+	void resetMovement();
+
+	void turnWheels(float);
+
+	vector3df position;
+	vector3df direction;
 	float speed;
 	float acceleration;
 	float frictionForward;
 	float frictionSide;
 	float frictionBrakes;
 
-	IMesh * carMesh;
+	bool accelerate;
+	bool brake;
+	bool turnRigth;
+	bool turnLeft;
+
+	int helthPoints;
+
+	IAnimatedMesh * carMeshClean;
+	IAnimatedMesh * carMeshDamaged;
+	IAnimatedMesh * wheelMesh;
 };
 #endif /* CAR_H_ */

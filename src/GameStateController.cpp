@@ -23,6 +23,21 @@ bool GameStateController::OnEvent(const SEvent & event)
 			this->pause();
 			return true;
 		}
+
+		if(this->car) {
+			if(this->isKeyDown(KEY_KEY_W)) {
+				this->car->doAccelerate();
+			}
+			if(this->isKeyDown(KEY_KEY_S)) {
+				this->car->doBrake();
+			}
+			if(this->isKeyDown(KEY_KEY_A)) {
+				this->car->doTurnLeft();
+			}
+			if(this->isKeyDown(KEY_KEY_D)) {
+				this->car->doTurnRight();
+			}
+		}
 	}
 
 	if(event.EventType == EET_GUI_EVENT && event.GUIEvent.EventType == EGET_BUTTON_CLICKED) {
@@ -77,6 +92,8 @@ GameStateController::GameStateController()
 	this->lastUpdate = 0;
 
 	this->camera = 0;
+
+	this->car = 0;
 
 	this->updateInterval = CONTROLLER_UPDATE_INTERVAL;
 
@@ -147,6 +164,10 @@ void GameStateController::pause()
 
 GameStateController::~GameStateController()
 {
+	if(this->car) {
+		delete this->car;
+		this->car = 0;
+	}
 }
 
 
@@ -167,6 +188,9 @@ void GameStateController::init(IrrlichtDevice *device)
 
 void GameStateController::update(u32 timeSpan)
 {
+	if(this->car) {
+		this->car->update(timeSpan);
+	}
 }
 
 
@@ -215,35 +239,8 @@ void GameStateController::newGame()
 	IAnimatedMesh * floor = this->smgr->getMesh("res/floor.obj");
 	IAnimatedMeshSceneNode * floorNode = this->smgr->addAnimatedMeshSceneNode(floor);
 
-	IAnimatedMesh * mesh = this->smgr->getMesh("res/carD.obj");
-	IAnimatedMeshSceneNode * carModel = this->smgr->addAnimatedMeshSceneNode(mesh);
+	this->car = new Car(this->smgr);
 
-	IAnimatedMesh * wheelMesh = this->smgr->getMesh("res/wheel.obj");
-	IAnimatedMeshSceneNode * frWheel = this->smgr->addAnimatedMeshSceneNode(
-		wheelMesh, 0, -1,
-		vector3df(0.3065f, -0.2235f, 0.619f)
-	);
-
-	IAnimatedMeshSceneNode * flWheel = this->smgr->addAnimatedMeshSceneNode(
-		wheelMesh, 0, -1,
-		vector3df(-0.3065f, -0.2235f, 0.619f)
-	);
-	IAnimatedMeshSceneNode * brWheel = this->smgr->addAnimatedMeshSceneNode(
-		wheelMesh, 0, -1,
-		vector3df(0.3065f, -0.2235f, -0.55f)
-	);
-	IAnimatedMeshSceneNode * blWheel = this->smgr->addAnimatedMeshSceneNode(
-		wheelMesh, 0, -1,
-		vector3df(-0.3065f, -0.2235f, -0.55f)
-	);
-
-	carModel->addChild(frWheel);
-	carModel->addChild(flWheel);
-	carModel->addChild(brWheel);
-	carModel->addChild(blWheel);
-
-	frWheel->setRotation(vector3df(0,45,0));
-	flWheel->setRotation(vector3df(0,45,0));
 	// add camera
 	this->camera = this->smgr->addCameraSceneNodeFPS(0,100.0f,0.01f);
 	this->camera->setPosition(core::vector3df(0,10,-10));
@@ -262,6 +259,11 @@ void GameStateController::mainMenu()
 {
 	this->smgr->clear();
 	this->guienv->clear();
+
+	if(this->car) {
+		delete this->car;
+		this->car = 0;
+	}
 
 	dimension2du size = this->driver->getScreenSize();
 
