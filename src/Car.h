@@ -37,8 +37,10 @@ private:
 	void resetMovement();
 
 	void turnWheels(float);
+	void rotateWheels(float);
 
-	vector3df position;
+	void updateSpeed();
+    vector3df position;
 	vector3df direction;
 	float speed;
 	float acceleration;
