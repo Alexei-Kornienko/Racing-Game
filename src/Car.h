@@ -9,19 +9,26 @@
 #define CAR_H_
 
 #include "racingGame.h"
+#include "GameStateController.h"
 
-class Car {
+class GameStateController;
+
+class Car : public IEventReceiver {
 public:
-	Car(ISceneManager *);
-	~Car();
+	Car(GameStateController * controller);
+	virtual ~Car();
 	void update(u32 timeSpan);
 
+	bool OnEvent(const SEvent& event);
+
+
+
+protected:
 	void doAccelerate();
 	void doBrake();
 	void doTurnLeft();
 	void doTurnRight();
 
-protected:
 	IAnimatedMeshSceneNode * carNode;
 
 	IAnimatedMeshSceneNode * wheelFL;
@@ -54,6 +61,8 @@ private:
 	bool turnLeft;
 
 	int helthPoints;
+	GameStateController * controller;
+	ICameraSceneNode * camera;
 
 	IAnimatedMesh * carMeshClean;
 	IAnimatedMesh * carMeshDamaged;

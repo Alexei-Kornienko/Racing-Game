@@ -11,6 +11,7 @@
 #include "racingGame.h"
 #include "Car.h"
 
+class Car;
 class GameStateController : public IEventReceiver {
 public:
 	GameStateController();
@@ -20,6 +21,8 @@ public:
 
 	void mainLoop();
 
+	bool addEventReceiver(IEventReceiver * receiver);
+	bool removeEventReceiver(IEventReceiver * receiver);
 	bool OnEvent(const SEvent& event);
 	bool isKeyDown(EKEY_CODE keyCode) const;
 	// Game states
@@ -27,13 +30,15 @@ public:
 	void mainMenu();
 	void pause();
 	void exit();
+    ISceneManager *getSmgr() const;
+
 
 protected:
 	u32 lastUpdate;
 	u32 updateInterval;
 
 	void update(u32 timeSpan);
-
+	void setSmgr(ISceneManager *smgr);
 private:
 	IrrlichtDevice * device;
 	IVideoDriver * driver;
@@ -43,7 +48,7 @@ private:
 	ITimer * timer;
 	bool paused;
 
-	ICameraSceneNode * camera;
+	core::array<IEventReceiver*> eventReceivers;
 
 	Car * car;
 

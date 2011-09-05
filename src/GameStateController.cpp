@@ -23,21 +23,6 @@ bool GameStateController::OnEvent(const SEvent & event)
 			this->pause();
 			return true;
 		}
-
-		if(this->car) {
-			if(this->isKeyDown(KEY_KEY_W)) {
-				this->car->doAccelerate();
-			}
-			if(this->isKeyDown(KEY_KEY_S)) {
-				this->car->doBrake();
-			}
-			if(this->isKeyDown(KEY_KEY_A)) {
-				this->car->doTurnLeft();
-			}
-			if(this->isKeyDown(KEY_KEY_D)) {
-				this->car->doTurnRight();
-			}
-		}
 	}
 
 	if(event.EventType == EET_GUI_EVENT && event.GUIEvent.EventType == EGET_BUTTON_CLICKED) {
@@ -63,6 +48,12 @@ bool GameStateController::OnEvent(const SEvent & event)
 		}
 		return true;
 	}
+	u32 size = this->eventReceivers.size();
+	bool result = false;
+	for(u32 i=0; i<size && !result; i++) {
+		result = this->eventReceivers[i]->OnEvent(event);
+	}
+
 	return false;
 }
 
@@ -91,8 +82,6 @@ GameStateController::GameStateController()
 	this->timer = 0;
 	this->lastUpdate = 0;
 
-	this->camera = 0;
-
 	this->car = 0;
 
 	this->updateInterval = CONTROLLER_UPDATE_INTERVAL;
@@ -119,14 +108,14 @@ void GameStateController::pause()
 			(s32)(size.Width>>1),
 			(s32)(size.Height>>1)
 		);
-		this->camera->setInputReceiverEnabled(true);
+		//this->camera->setInputReceiverEnabled(true);
 		this->guienv->clear();
 	} else { // Pause (show pause menu)
 		this->paused = true;
 		if(!this->timer->isStopped()) {
 			this->timer->stop();
 		}
-		this->camera->setInputReceiverEnabled(false);
+		//this->camera->setInputReceiverEnabled(false);
 		device->getCursorControl()->setVisible(true);
 		this->guienv->clear();
 
@@ -181,10 +170,40 @@ void GameStateController::init(IrrlichtDevice *device)
 	this->timer = device->getTimer();
 
 	this->device->setEventReceiver(this);
+
 	this->guienv->setUserEventReceiver(this);
 }
 
 
+
+ISceneManager *GameStateController::getSmgr() const
+{
+    return smgr;
+}
+
+bool GameStateController::addEventReceiver(IEventReceiver * receiver)
+{
+	if(this->eventReceivers.binary_search(receiver) == -1) {
+		this->eventReceivers.push_back(receiver);
+		return true;
+	}
+	return false;
+}
+
+bool GameStateController::removeEventReceiver(IEventReceiver * receiver)
+{
+	s32 index = this->eventReceivers.binary_search(receiver);
+	if(index != -1) {
+		this->eventReceivers.erase(index);
+		return true;
+	}
+	return false;
+}
+
+void GameStateController::setSmgr(ISceneManager *smgr)
+{
+    this->smgr = smgr;
+}
 
 void GameStateController::update(u32 timeSpan)
 {
@@ -239,13 +258,9 @@ void GameStateController::newGame()
 	IAnimatedMesh * floor = this->smgr->getMesh("res/floor.obj");
 	IAnimatedMeshSceneNode * floorNode = this->smgr->addAnimatedMeshSceneNode(floor);
 
-	this->car = new Car(this->smgr);
+	this->car = new Car(this);
 
-	// add camera
-	this->camera = this->smgr->addCameraSceneNodeFPS(0,100.0f,0.01f);
-	this->camera->setPosition(core::vector3df(0,10,-10));
-	this->camera->setTarget(core::vector3df(0,0,0));
-	this->camera->setFarValue(100.0f);
+
 	device->getCursorControl()->setVisible(false);
 
 	this->timer->start();
