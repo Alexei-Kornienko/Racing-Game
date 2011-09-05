@@ -1,2 +1,4 @@
-/.project
-/.cproject
+.project
+.cproject
+Debug
+Release
