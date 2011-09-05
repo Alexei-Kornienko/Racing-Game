@@ -13,15 +13,11 @@
 
 class GameStateController;
 
-class Car : public IEventReceiver {
+class Car  {
 public:
 	Car(GameStateController * controller);
 	virtual ~Car();
-	void update(u32 timeSpan);
-
-	bool OnEvent(const SEvent& event);
-
-
+	virtual void update(u32 timeSpan);
 
 protected:
 	void doAccelerate();
@@ -29,6 +25,7 @@ protected:
 	void doTurnLeft();
 	void doTurnRight();
 
+	GameStateController * controller;
 	IAnimatedMeshSceneNode * carNode;
 
 	IAnimatedMeshSceneNode * wheelFL;
@@ -61,8 +58,6 @@ private:
 	bool turnLeft;
 
 	int helthPoints;
-	GameStateController * controller;
-	ICameraSceneNode * camera;
 
 	IAnimatedMesh * carMeshClean;
 	IAnimatedMesh * carMeshDamaged;

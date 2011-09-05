@@ -6,6 +6,7 @@
  */
 
 #include "GameStateController.h"
+#include "PlayerCar.h"
 
 #define	MENU_NEW_GAME 1
 #define	MENU_OPTIONS 2
@@ -258,7 +259,7 @@ void GameStateController::newGame()
 	IAnimatedMesh * floor = this->smgr->getMesh("res/floor.obj");
 	IAnimatedMeshSceneNode * floorNode = this->smgr->addAnimatedMeshSceneNode(floor);
 
-	this->car = new Car(this);
+	this->car = new PlayerCar(this);
 
 
 	device->getCursorControl()->setVisible(false);

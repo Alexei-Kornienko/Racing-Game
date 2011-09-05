@@ -11,19 +11,9 @@
 Car::Car(GameStateController * controller)
 {
 	this->controller = controller;
-	this->controller->addEventReceiver(this);
+
 	ISceneManager * smgr = controller->getSmgr();
 	this->initModels(smgr);
-
-	// add camera
-	this->camera = smgr->addCameraSceneNode(
-		this->carNode,
-		vector3df(0,3,-5),
-		vector3df(0,0,0)
-	);
-	ISceneNodeAnimator * anim = smgr->createFlyCircleAnimator();
-
-	this->camera->setFarValue(100.0f);
 
 	this->position = vector3df(0,0,0);
 	this->direction = vector3df(0,0,1);
@@ -76,26 +66,6 @@ void Car::initModels(ISceneManager * smgr) {
 
 Car::~Car()
 {
-	this->controller->removeEventReceiver(this);
-}
-
-bool Car::OnEvent(const SEvent & event)
-{
-	if (event.EventType == EET_KEY_INPUT_EVENT) {
-		if(this->controller->isKeyDown(KEY_KEY_W)) {
-			this->doAccelerate();
-		}
-		if(this->controller->isKeyDown(KEY_KEY_S)) {
-			this->doBrake();
-		}
-		if(this->controller->isKeyDown(KEY_KEY_A)) {
-			this->doTurnLeft();
-		}
-		if(this->controller->isKeyDown(KEY_KEY_D)) {
-			this->doTurnRight();
-		}
-	}
-	return false;
 }
 
 void Car::updateSpeed()
@@ -135,7 +105,6 @@ void Car::update(u32 timeSpan)
 
 	this->position += positionChange;
 	this->carNode->setPosition(this->position);
-	this->camera->setTarget(this->carNode->getPosition());
 
 	this->rotateWheels(distance);
 	this->turnWheels(seconds);
