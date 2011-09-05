@@ -8,6 +8,15 @@
 #ifndef CONTROLLER_H_
 #define CONTROLLER_H_
 
+#define AI_COUNT 4
+
+#define	MENU_NEW_GAME 1
+#define	MENU_OPTIONS 2
+#define MENU_EXIT 3
+
+#define PMENU_RESUME 4
+#define PMENU_MAIN 5
+
 #include "racingGame.h"
 #include "Car.h"
 
@@ -45,12 +54,15 @@ private:
 	ISceneManager * smgr;
 	IGUIEnvironment * guienv;
 
+	void releaseCars();
+
 	ITimer * timer;
 	bool paused;
 
 	core::array<IEventReceiver*> eventReceivers;
 
 	Car * car;
+	array<Car *> aiCars;
 
 	// We use this array to store the current state of each key
 	bool keysDown[KEY_KEY_CODES_COUNT];

@@ -7,13 +7,7 @@
 
 #include "GameStateController.h"
 #include "PlayerCar.h"
-
-#define	MENU_NEW_GAME 1
-#define	MENU_OPTIONS 2
-#define MENU_EXIT 3
-
-#define PMENU_RESUME 4
-#define PMENU_MAIN 5
+#include "AI_Car.h"
 
 bool GameStateController::OnEvent(const SEvent & event)
 {
@@ -109,18 +103,24 @@ void GameStateController::pause()
 			(s32)(size.Width>>1),
 			(s32)(size.Height>>1)
 		);
-		//this->camera->setInputReceiverEnabled(true);
+		if(this->car) {
+			// FIXME possible issue
+			((PlayerCar*)this->car)->getCamera()->setInputReceiverEnabled(true);
+		}
+
 		this->guienv->clear();
 	} else { // Pause (show pause menu)
 		this->paused = true;
 		if(!this->timer->isStopped()) {
 			this->timer->stop();
 		}
-		//this->camera->setInputReceiverEnabled(false);
+		if(this->car) {
+			// FIXME possible issue
+			((PlayerCar*)this->car)->getCamera()->setInputReceiverEnabled(false);
+		}
+
 		device->getCursorControl()->setVisible(true);
 		this->guienv->clear();
-
-
 
 		s32 left = size.Width * 0.2f;
 		s32 top = size.Height * 0.20f;
@@ -154,10 +154,7 @@ void GameStateController::pause()
 
 GameStateController::~GameStateController()
 {
-	if(this->car) {
-		delete this->car;
-		this->car = 0;
-	}
+	this->releaseCars();
 }
 
 
@@ -209,7 +206,17 @@ void GameStateController::setSmgr(ISceneManager *smgr)
 void GameStateController::update(u32 timeSpan)
 {
 	if(this->car) {
+		timeSpan = this->timer->getTime() - this->lastUpdate;
+		float seconds = timeSpan / 1000.f;
+		if(seconds < this->updateInterval) {
+			return;
+		}
 		this->car->update(timeSpan);
+		u32 size = this->aiCars.size();
+		for(u32 i =0; i<size; i++) {
+			this->aiCars[i]->update(timeSpan);
+		}
+		this->lastUpdate = this->timer->getTime();
 	}
 }
 
@@ -219,11 +226,6 @@ void GameStateController::mainLoop()
 {
 	u32 timeSpan = 0;
 	while(this->device->run()) {
-		timeSpan = this->timer->getTime() - this->lastUpdate;
-//		if(timeSpan < this->updateInterval) {
-//			this->device->yield();
-//			continue;
-//		}
 		this->update(timeSpan);
 
 		this->driver->beginScene(true, true, SColor(255,100,101,140));
@@ -231,7 +233,7 @@ void GameStateController::mainLoop()
 		this->guienv->drawAll();
 		this->driver->endScene();
 
-		this->lastUpdate = this->timer->getTime();
+
 	}
 }
 
@@ -247,7 +249,7 @@ void GameStateController::newGame()
 	this->guienv->clear();
 	//this->driver->
 
-	ISceneNode * skydome = this->smgr->addSkyDomeSceneNode(
+	this->smgr->addSkyDomeSceneNode(
 		this->driver->getTexture("res/skydome.jpg"),
 		16,
 		8,
@@ -257,10 +259,15 @@ void GameStateController::newGame()
 	);
 
 	IAnimatedMesh * floor = this->smgr->getMesh("res/floor.obj");
-	IAnimatedMeshSceneNode * floorNode = this->smgr->addAnimatedMeshSceneNode(floor);
+	this->smgr->addAnimatedMeshSceneNode(floor); // TODO create normal level
 
+	device->getCursorControl()->setVisible(false);
+
+	//this->releaseCars();
 	this->car = new PlayerCar(this);
-
+	for(u32 i =0; i<AI_COUNT; i++) {
+		this->aiCars.push_back(new AI_Car(this, this->car));
+	}
 
 	device->getCursorControl()->setVisible(false);
 
@@ -276,10 +283,7 @@ void GameStateController::mainMenu()
 	this->smgr->clear();
 	this->guienv->clear();
 
-	if(this->car) {
-		delete this->car;
-		this->car = 0;
-	}
+	this->releaseCars();
 
 	dimension2du size = this->driver->getScreenSize();
 
@@ -315,4 +319,21 @@ void GameStateController::mainMenu()
 		L"Exit the game..."
 	);
 }
+
+void GameStateController::releaseCars()
+{
+	if(this->car) {
+		delete this->car;
+		this->car = 0;
+	}
+	u32 size = this->aiCars.size();
+	for(u32 i =0; i<size; i++) {
+		if(this->aiCars[i]) {
+			delete this->aiCars[i];
+		}
+	}
+	this->aiCars.erase(0, size);
+}
+
+
 

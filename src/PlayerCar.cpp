@@ -9,45 +9,45 @@
 
 PlayerCar::PlayerCar(GameStateController *controller) : Car(controller)
 {
-	this->controller->addEventReceiver(this);
 	// add camera
-	this->camera = this->controller->getSmgr()->addCameraSceneNode(
-		this->carNode,
-		vector3df(0,3,-5),
-		vector3df(0,0,0)
-	);
-	ISceneNodeAnimator * anim = this->controller->getSmgr()->createFlyCircleAnimator();
-
+//	this->camera = this->controller->getSmgr()->addCameraSceneNode(
+//		this->carNode,
+//		vector3df(0,3,-5),
+//		vector3df(0,0,0)
+//	);
+	// add camera
+	this->camera = this->controller->getSmgr()->addCameraSceneNodeFPS(0,100.0f,0.01f);
+	this->camera->setPosition(core::vector3df(0,10,-10));
+	this->camera->setTarget(core::vector3df(0,0,0));
 	this->camera->setFarValue(100.0f);
 }
 
 PlayerCar::~PlayerCar()
 {
-	this->controller->removeEventReceiver(this);
 }
 
 void PlayerCar::update(u32 timeSpan)
 {
+	if(this->controller->isKeyDown(KEY_KEY_W)) {
+		this->doAccelerate();
+	}
+	if(this->controller->isKeyDown(KEY_KEY_S)) {
+		this->doBrake();
+	}
+	if(this->controller->isKeyDown(KEY_KEY_A)) {
+		this->doTurnLeft();
+	}
+	if(this->controller->isKeyDown(KEY_KEY_D)) {
+		this->doTurnRight();
+	}
 	Car::update(timeSpan);
-	this->camera->setTarget(this->carNode->getPosition());
+	//this->camera->setTarget(this->carNode->getPosition());
 }
 
-bool PlayerCar::OnEvent(const SEvent & event)
+ICameraSceneNode *PlayerCar::getCamera() const
 {
-	if (event.EventType == EET_KEY_INPUT_EVENT) {
-		if(this->controller->isKeyDown(KEY_KEY_W)) {
-			this->doAccelerate();
-		}
-		if(this->controller->isKeyDown(KEY_KEY_S)) {
-			this->doBrake();
-		}
-		if(this->controller->isKeyDown(KEY_KEY_A)) {
-			this->doTurnLeft();
-		}
-		if(this->controller->isKeyDown(KEY_KEY_D)) {
-			this->doTurnRight();
-		}
-	}
-	return false;
+    return camera;
 }
+
+
 

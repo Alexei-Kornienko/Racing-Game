@@ -11,13 +11,13 @@
 #include "Car.h"
 
 class GameStateController;
-class PlayerCar : public Car, public IEventReceiver {
+class PlayerCar : public Car {
 public:
 	PlayerCar(GameStateController * controller);
 	virtual ~PlayerCar();
 	virtual void update(u32 timeSpan);
 
-	bool OnEvent(const SEvent& event);
+    ICameraSceneNode *getCamera() const;
 
 protected:
 

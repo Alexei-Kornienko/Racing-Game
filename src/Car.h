@@ -18,8 +18,17 @@ public:
 	Car(GameStateController * controller);
 	virtual ~Car();
 	virtual void update(u32 timeSpan);
+	float getWheelsTurn() const;
+    vector3df getDirection() const;
+    int getHelthPoints() const;
+    vector3df getPosition() const;
+    float getSpeed() const;
+
 
 protected:
+    void setDirection(const vector3df direction);
+    void setPosition(const vector3df position);
+
 	void doAccelerate();
 	void doBrake();
 	void doTurnLeft();
@@ -47,6 +56,7 @@ private:
     vector3df position;
 	vector3df direction;
 	float speed;
+	float maxSpeed;
 	float acceleration;
 	float frictionForward;
 	float frictionSide;

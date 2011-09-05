@@ -20,10 +20,11 @@ Car::Car(GameStateController * controller)
 
 	this->helthPoints = 100;
 	this->speed = 0;
+	this->maxSpeed = 10;
 
 	this->resetMovement();
 
-	// Experimental constants //TODO fix hardcode
+	// Experimental constants
 	this->acceleration = 0.05f;
 	this->frictionBrakes = 0.08f;
 	this->frictionForward = 0.01f;
@@ -41,39 +42,75 @@ void Car::initModels(ISceneManager * smgr) {
 		this->wheelMesh,
 		this->carNode,
 		-1,
-		vector3df(0.3065f, -0.2235f, 0.619f) //TODO fix hardcode
+		vector3df(0.3065f, -0.2235f, 0.619f)
 	);
 
 	this->wheelFL = smgr->addAnimatedMeshSceneNode(
 		this->wheelMesh,
 		this->carNode,
 		-1,
-		vector3df(-0.3065f, -0.2235f, 0.619f) //TODO fix hardcode
+		vector3df(-0.3065f, -0.2235f, 0.619f)
 	);
 	this->wheelBR = smgr->addAnimatedMeshSceneNode(
 		this->wheelMesh,
 		this->carNode,
 		-1,
-		vector3df(0.3065f, -0.2235f, -0.55f) //TODO fix hardcode
+		vector3df(0.3065f, -0.2235f, -0.55f)
 	);
 	this->wheelBL = smgr->addAnimatedMeshSceneNode(
 		this->wheelMesh,
 		this->carNode,
 		-1,
-		vector3df(-0.3065f, -0.2235f, -0.55f) //TODO fix hardcode
+		vector3df(-0.3065f, -0.2235f, -0.55f)
 	);
 }
 
 Car::~Car()
 {
+	this->carNode->remove();
+}
+
+vector3df Car::getDirection() const
+{
+    return direction;
+}
+
+int Car::getHelthPoints() const
+{
+    return helthPoints;
+}
+
+vector3df Car::getPosition() const
+{
+    return position;
+}
+
+float Car::getSpeed() const
+{
+    return speed;
+}
+
+void Car::setDirection(const vector3df direction)
+{
+    this->direction = direction;
+}
+
+void Car::setPosition(const vector3df position)
+{
+    this->position = position;
+}
+
+float Car::getWheelsTurn() const
+{
+	return this->wheelFL->getRotation().Y;
 }
 
 void Car::updateSpeed()
 {
-    if(this->accelerate){
+    if(this->accelerate && this->speed < this->maxSpeed){
         this->speed += this->acceleration;
     }
-    if(this->brake){
+    if(this->brake && this->speed > this->maxSpeed / -2.f){
         this->speed -= this->frictionBrakes;
     }
     if(!this->floatEqual(this->speed, 0)){
@@ -85,29 +122,24 @@ void Car::update(u32 timeSpan)
 {
 	float seconds = timeSpan / 1000.f;
 
+	this->turnWheels(seconds);
 
     this->updateSpeed();
 
-    float turnSpeed = 50.f; //TODO fix hardcode
-	float rotation = 0;
-	if (this->turnRigth) {
-		rotation = -turnSpeed * seconds * this->speed;
-	}
-	if (this->turnLeft) {
-		rotation = turnSpeed * seconds * this->speed;
-	}
+    float distance = this->speed * seconds;
+
+    this->rotateWheels(distance);
+
+	float rotation = -this->wheelFL->getRotation().Y * distance;
+
 	this->direction.rotateXZBy(rotation, vector3df(0, 0, 0));
 
 	this->carNode->setRotation(this->direction.getHorizontalAngle());
 
-	float distance = this->speed * seconds;
 	vector3df positionChange = this->direction * distance;
 
 	this->position += positionChange;
 	this->carNode->setPosition(this->position);
-
-	this->rotateWheels(distance);
-	this->turnWheels(seconds);
 
 	this->resetMovement();
 }
@@ -117,7 +149,7 @@ bool Car::floatEqual(float f1, float f2) {
 }
 
 void Car::rotateWheels(float distance) {
-	float angle = 360 * (distance / 0.68); // 0.68 -- Approximate wheel length //TODO fix hardcode
+	float angle = 360 * (distance / 0.68); // 0.68 -- Approximate wheel length
 
 	vector3df rotation = this->wheelFL->getRotation();
 	rotation.X += angle;
@@ -133,7 +165,7 @@ void Car::rotateWheels(float distance) {
 void Car::turnWheels(float seconds) {
 	vector3df rotation = this->wheelFL->getRotation();
 
-	float turnSpeedDeg = 500 * seconds; //TODO fix hardcode
+	float turnSpeedDeg = 50 * seconds;
 	if(this->turnLeft || this->turnRigth) {
 		if(this->turnRigth) {
 			if(rotation.Y < 45) {
@@ -147,7 +179,7 @@ void Car::turnWheels(float seconds) {
 		}
 	} else {
 		if(!this->floatEqual(rotation.Y,0) && !this->floatEqual(this->speed, 0)) {
-			turnSpeedDeg /= 3;
+			turnSpeedDeg *= 2;
 			if(fabs(rotation.Y) < turnSpeedDeg) {
 				rotation.Y = 0;
 			} else {
