@@ -26,7 +26,7 @@ PlayerCar::~PlayerCar()
 {
 }
 
-void PlayerCar::update(u32 timeSpan)
+void PlayerCar::update(dFloat timeSpan)
 {
 	if(this->controller->isKeyDown(KEY_KEY_W)) {
 		this->doAccelerate();
@@ -40,7 +40,6 @@ void PlayerCar::update(u32 timeSpan)
 	if(this->controller->isKeyDown(KEY_KEY_D)) {
 		this->doTurnRight();
 	}
-	Car::update(timeSpan);
 	//this->camera->setTarget(this->carNode->getPosition());
 }
 

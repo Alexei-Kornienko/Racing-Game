@@ -25,7 +25,7 @@ int initWindow(video::E_DRIVER_TYPE type) {
 		return 1;
 	}
 
-	device->setWindowCaption(L"Asphalt-6 :)");
+	device->setWindowCaption(L"Flatout :)");
 
 	return 0;
 }

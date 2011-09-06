@@ -13,6 +13,14 @@
 #include <stdio.h>
 
 #include "irrlicht.h"
+#include "Newton.h"
+#include "dVector.h"
+#include "dMatrix.h"
+#include "dQuaternion.h"
+
+// use scale factor between Newton and Irrlicht
+#define NEWTON_TO_IRR 32.0f
+#define IRR_TO_NEWTON (1.0f / NEWTON_TO_IRR)
 
 using namespace irr;
 

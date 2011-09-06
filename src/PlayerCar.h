@@ -15,7 +15,7 @@ class PlayerCar : public Car {
 public:
 	PlayerCar(GameStateController * controller);
 	virtual ~PlayerCar();
-	virtual void update(u32 timeSpan);
+	virtual void update(dFloat timeSpan);
 
     ICameraSceneNode *getCamera() const;
 

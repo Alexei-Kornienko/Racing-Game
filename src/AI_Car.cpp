@@ -11,7 +11,8 @@
 AI_Car::AI_Car(GameStateController * controller, Car * targetCar) : Car(controller)
 {
 	this->targetCar = targetCar;
-	vector3df position((rand()%20) - 10, 0, (rand()%20) - 10);
+//	vector3df position((rand()%20) - 10, 0, (rand()%20) - 10);
+	vector3df position(0, 0, -10);
 	this->setPosition(position);
 }
 
@@ -19,14 +20,14 @@ AI_Car::~AI_Car()
 {
 }
 
-void AI_Car::update(u32 timeSpan)
+void AI_Car::update(dFloat timeSpan)
 {
 	vector3df targetVector = this->targetCar->getPosition() - this->getPosition();
 	vector3df direction = this->getDirection().getHorizontalAngle();
 	vector3df targetAngle = targetVector.getHorizontalAngle();
 	float resultAngle = targetAngle.Y - direction.Y;
 
-	float rotation = this->getWheelsTurn() * this->getSpeed() * timeSpan*2 / 1000.f;
+	float rotation = this->getWheelsTurn() * this->getSpeed() * timeSpan*2;
 
 	resultAngle -= rotation;
 	if(resultAngle > 10) {
@@ -42,6 +43,5 @@ void AI_Car::update(u32 timeSpan)
 			this->doBrake();
 		}
 	}
-	Car::update(timeSpan);
 }
 

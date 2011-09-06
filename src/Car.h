@@ -13,11 +13,17 @@
 
 class GameStateController;
 
+void applyCarMoveForce(const NewtonBody* body, dFloat timestep, int threadIndex);
+void applyCarTransform (const NewtonBody* body, const dFloat* matrix, int threadIndex);
+
 class Car  {
+friend void applyCarMoveForce(const NewtonBody* body, dFloat timestep, int threadIndex);
+friend void applyCarTransform (const NewtonBody* body, const dFloat* matrix, int threadIndex);
+
 public:
 	Car(GameStateController * controller);
 	virtual ~Car();
-	virtual void update(u32 timeSpan);
+	virtual void update(dFloat timeSpan) = 0;
 	float getWheelsTurn() const;
     vector3df getDirection() const;
     int getHelthPoints() const;
@@ -46,13 +52,14 @@ protected:
 
 private:
 	void initModels(ISceneManager *);
+	void initPhysics(NewtonWorld *);
 
 	void resetMovement();
 
 	void turnWheels(float);
 	void rotateWheels(float);
 
-	void updateSpeed();
+	dVector getAccelerationForce(dFloat time);
     vector3df position;
 	vector3df direction;
 	float speed;
@@ -68,6 +75,8 @@ private:
 	bool turnLeft;
 
 	int helthPoints;
+
+	NewtonBody* body;
 
 	IAnimatedMesh * carMeshClean;
 	IAnimatedMesh * carMeshDamaged;

@@ -76,8 +76,10 @@ GameStateController::GameStateController()
 	this->smgr = 0;
 	this->timer = 0;
 	this->lastUpdate = 0;
+	this->lastFPS = -1;
 
 	this->car = 0;
+	this->nWorld = 0;
 
 	this->updateInterval = CONTROLLER_UPDATE_INTERVAL;
 
@@ -203,37 +205,45 @@ void GameStateController::setSmgr(ISceneManager *smgr)
     this->smgr = smgr;
 }
 
-void GameStateController::update(u32 timeSpan)
+void GameStateController::update()
 {
+	u32 timeSpan = this->timer->getTime() - this->lastUpdate;
+	float seconds = timeSpan / 1000.f;
+	if(seconds < this->updateInterval) {
+		return;
+	}
+
 	if(this->car) {
-		timeSpan = this->timer->getTime() - this->lastUpdate;
-		float seconds = timeSpan / 1000.f;
-		if(seconds < this->updateInterval) {
-			return;
-		}
+		NewtonUpdate(this->nWorld,1.0f/this->driver->getFPS());
+//		NewtonCreate
 		this->car->update(timeSpan);
 		u32 size = this->aiCars.size();
 		for(u32 i =0; i<size; i++) {
 			this->aiCars[i]->update(timeSpan);
 		}
-		this->lastUpdate = this->timer->getTime();
 	}
+
+	this->lastUpdate = this->timer->getTime();
 }
 
 
 
 void GameStateController::mainLoop()
 {
-	u32 timeSpan = 0;
 	while(this->device->run()) {
-		this->update(timeSpan);
-
+		this->update();
 		this->driver->beginScene(true, true, SColor(255,100,101,140));
 		this->smgr->drawAll();
 		this->guienv->drawAll();
 		this->driver->endScene();
 
-
+		u32 fps = this->driver->getFPS();
+		if(this->lastFPS != fps) {
+			stringw title(L"Flatout :) - FPS:");
+			title += stringw(fps);
+			this->device->setWindowCaption(title.c_str());
+			this->lastFPS = fps;
+		}
 	}
 }
 
@@ -247,7 +257,6 @@ void GameStateController::newGame()
 	this->timer->setTime(0);
 	this->smgr->clear();
 	this->guienv->clear();
-	//this->driver->
 
 	this->smgr->addSkyDomeSceneNode(
 		this->driver->getTexture("res/skydome.jpg"),
@@ -263,6 +272,20 @@ void GameStateController::newGame()
 
 	device->getCursorControl()->setVisible(false);
 
+	this->nWorld = NewtonCreate();
+
+	// set a fix world size
+	dVector minSize (-500.0f, 0.f, -500.0f);
+	dVector maxSize ( 500.0f,  50.0f,  500.0f);
+	NewtonSetWorldSize(this->nWorld, &minSize[0], &maxSize[0]);
+
+	// configure the Newton world to use iterative solve mode 0
+	// this is the most efficient but the less accurate mode
+	NewtonSetSolverModel(this->nWorld, 1);
+
+	// set the adaptive friction model for faster speed
+	NewtonSetFrictionModel(this->nWorld, 1);
+
 	//this->releaseCars();
 	this->car = new PlayerCar(this);
 	for(u32 i =0; i<AI_COUNT; i++) {
@@ -272,8 +295,6 @@ void GameStateController::newGame()
 	device->getCursorControl()->setVisible(false);
 
 	this->timer->start();
-
-
 }
 
 
@@ -320,8 +341,19 @@ void GameStateController::mainMenu()
 	);
 }
 
+NewtonWorld *GameStateController::getWorld() const
+{
+    return nWorld;
+}
+
 void GameStateController::releaseCars()
 {
+	if(this->nWorld) {
+		NewtonDestroyAllBodies(this->nWorld);
+		NewtonDestroy(this->nWorld);
+		this->nWorld = 0;
+	}
+
 	if(this->car) {
 		delete this->car;
 		this->car = 0;

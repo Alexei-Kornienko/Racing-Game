@@ -15,7 +15,7 @@ public:
 	AI_Car(GameStateController * controller, Car * targetCar);
 	virtual ~AI_Car();
 
-	virtual void update(u32 timeSpan);
+	virtual void update(dFloat timeSpan);
 
 protected:
 
