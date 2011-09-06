@@ -9,9 +9,9 @@
 #include "GameStateController.h"
 IrrlichtDevice * device;
 
-int initWindow() {
+int initWindow(video::E_DRIVER_TYPE type) {
 	device = createDevice(
-		video::EDT_SOFTWARE,
+		type,
 		dimension2d<u32>(800, 600),
 		16,
 		false,
@@ -31,7 +31,8 @@ int initWindow() {
 }
 
 int main() {
-	if(initWindow()) {
+	video::E_DRIVER_TYPE type = video::EDT_SOFTWARE;
+	if(initWindow(type)) {
 		return 1;
 	}
 
