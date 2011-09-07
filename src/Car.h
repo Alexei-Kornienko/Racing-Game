@@ -37,6 +37,7 @@ protected:
     void setPosition(const vector3df position);
 
 	void doAccelerate();
+	void doReverse();
 	void doBrake();
 	void doTurnLeft();
 	void doTurnRight();
@@ -72,6 +73,7 @@ private:
 	float frictionBrakes;
 
 	bool accelerate;
+	bool reverse;
 	bool brake;
 	bool turnRigth;
 	bool turnLeft;

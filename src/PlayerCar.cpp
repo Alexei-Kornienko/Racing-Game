@@ -32,6 +32,9 @@ void PlayerCar::update(dFloat timeSpan)
 		this->doAccelerate();
 	}
 	if(this->controller->isKeyDown(KEY_KEY_S)) {
+		this->doReverse();
+	}
+	if(this->controller->isKeyDown(KEY_SPACE)) {
 		this->doBrake();
 	}
 	if(this->controller->isKeyDown(KEY_KEY_A)) {

@@ -47,7 +47,7 @@ protected:
 	u32 lastUpdate;
 	u32 updateInterval;
 
-	void update();
+	void update(u32 timeSpan);
 	void setSmgr(ISceneManager *smgr);
 private:
 	IrrlichtDevice * device;

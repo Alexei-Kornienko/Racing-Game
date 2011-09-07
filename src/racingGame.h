@@ -8,7 +8,7 @@
 #ifndef RACINGGAME_H_
 #define RACINGGAME_H_
 
-#define CONTROLLER_UPDATE_INTERVAL 0.100f
+#define CONTROLLER_UPDATE_INTERVAL 200
 
 #include <stdio.h>
 

@@ -97,9 +97,6 @@ void GameStateController::pause()
 
 	if(this->paused) { // Resume
 		this->paused = false;
-		if(this->timer->isStopped()) {
-			this->timer->start();
-		}
 		device->getCursorControl()->setVisible(false);
 		device->getCursorControl()->setPosition(
 			(s32)(size.Width>>1),
@@ -113,9 +110,6 @@ void GameStateController::pause()
 		this->guienv->clear();
 	} else { // Pause (show pause menu)
 		this->paused = true;
-		if(!this->timer->isStopped()) {
-			this->timer->stop();
-		}
 		if(this->car) {
 			// FIXME possible issue
 			((PlayerCar*)this->car)->getCamera()->setInputReceiverEnabled(false);
@@ -165,6 +159,10 @@ void GameStateController::init(IrrlichtDevice *device)
 {
 	this->device = device;
 	this->driver = device->getVideoDriver();
+	SColorf color(1,1,1);
+	this->driver->setAmbientLight(color);
+
+
 	this->smgr = device->getSceneManager();
 	this->guienv = device->getGUIEnvironment();
 	this->timer = device->getTimer();
@@ -205,16 +203,13 @@ void GameStateController::setSmgr(ISceneManager *smgr)
     this->smgr = smgr;
 }
 
-void GameStateController::update()
+void GameStateController::update(u32 timeSpan)
 {
 	if(this->paused) {
 		return;
 	}
-	u32 timeSpan = this->timer->getTime() - this->lastUpdate;
+
 	float seconds = timeSpan / 1000.f;
-	if(seconds < this->updateInterval) {
-		return;
-	}
 
 	if(this->car) {
 		NewtonUpdate(this->nWorld,1.0f/this->driver->getFPS());
@@ -226,20 +221,25 @@ void GameStateController::update()
 		}
 	}
 
-	this->lastUpdate = this->timer->getTime();
+
 }
 
 
 
 void GameStateController::mainLoop()
 {
+	this->timer->start();
 	while(this->device->run()) {
-		this->update();
+		u32 timeSpan = this->timer->getTime() - this->lastUpdate;
+
+		this->device->sleep(20);
+
 		this->driver->beginScene(true, true, SColor(255,100,101,140));
 		this->smgr->drawAll();
 		this->guienv->drawAll();
 		this->driver->endScene();
 
+		this->update(timeSpan);
 		u32 fps = this->driver->getFPS();
 		if(this->lastFPS != fps) {
 			stringw title(L"Flatout :) - FPS:");
@@ -247,6 +247,7 @@ void GameStateController::mainLoop()
 			this->device->setWindowCaption(title.c_str());
 			this->lastFPS = fps;
 		}
+		this->lastUpdate = this->timer->getTime();
 	}
 }
 
@@ -254,11 +255,9 @@ void GameStateController::mainLoop()
 
 void GameStateController::newGame()
 {
-	if(!this->timer->isStopped()) {
-		this->timer->stop();
-	}
 	this->timer->setTime(0);
 	this->smgr->clear();
+	this->smgr->addLightSceneNode(0, vector3df(0,10,0), SColorf(1,1,1));
 	this->guienv->clear();
 
 	device->getCursorControl()->setVisible(false);
@@ -275,7 +274,7 @@ void GameStateController::newGame()
 	this->nWorld = NewtonCreate();
 
 	// set a fix world size
-	dVector minSize (-500.0f, 0.f, -500.0f);
+	dVector minSize (-500.0f, -10.f, -500.0f);
 	dVector maxSize ( 500.0f,  50.0f,  500.0f);
 	NewtonSetWorldSize(this->nWorld, &minSize[0], &maxSize[0]);
 
@@ -283,32 +282,29 @@ void GameStateController::newGame()
 	// this is the most efficient but the less accurate mode
 	NewtonSetSolverModel(this->nWorld, 1);
 
-	// set the adaptive friction model for faster speed
-	NewtonSetFrictionModel(this->nWorld, 1);
-
 	IAnimatedMesh * floor = this->smgr->getMesh("res/floor.obj");
 	IAnimatedMeshSceneNode * floorNode = this->smgr->addAnimatedMeshSceneNode(floor); // TODO create normal level
 	vector3df v1 = floorNode->getBoundingBox().MinEdge;
 	vector3df v2 = floorNode->getBoundingBox().MaxEdge;
 
-	dVector minBox(v1.X, v1.Y, v1.Z);
+	dVector minBox(v1.X, v1.Y+0.3f, v1.Z);
 	dVector maxBox(v2.X, v2.Y, v2.Z);
 
 	dVector size(maxBox - minBox);
 	dVector origin((maxBox + minBox).Scale(0.5f));
 
+//	size.m_y = 1.0f;
 	size.m_w = 1.0f;
+//	origin.m_y = 0.5f;
 	origin.m_w = 1.0f;
 
 	dMatrix offset(GetIdentityMatrix());
 	offset.m_posit = origin;
-
 	NewtonCollision* collision = NewtonCreateBox(nWorld, size.m_x, size.m_y, size.m_z, 0, &offset[0][0]);
 
 	dQuaternion q(floorNode->getRotation().X, floorNode->getRotation().Y, floorNode->getRotation().Z, 1.f);
 	dVector v(floorNode->getPosition().X, floorNode->getPosition().Y, floorNode->getPosition().Z);
 	dMatrix matrix(q, v);
-
 
 	NewtonBody* floorBody = NewtonCreateBody(nWorld, collision);
 	NewtonBodySetMatrix(floorBody, &matrix[0][0]);
@@ -319,7 +315,6 @@ void GameStateController::newGame()
 	NewtonConvexCollisionCalculateInertialMatrix(collision, &inertia[0], &origin[0]);
 
 	NewtonBodySetMassMatrix(floorBody, 0, 0, 0, 0);
-
 	NewtonBodySetCentreOfMass(floorBody, &origin[0]);
 
 //	this->releaseCars();
@@ -329,8 +324,6 @@ void GameStateController::newGame()
 	}
 
 	device->getCursorControl()->setVisible(false);
-
-	this->timer->start();
 }
 
 

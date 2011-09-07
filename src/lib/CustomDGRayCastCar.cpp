@@ -247,15 +247,6 @@ void CustomDGRayCastCar::AddSingleSuspensionTire (
 		shapePoints[i + TIRE_SHAPE_SIZE].m_z = shapePoints[i].m_z;
 	}
 	m_tires[m_tiresCount].m_shape = NewtonCreateConvexHull ( m_world, TIRE_SHAPE_SIZE * 2, &shapePoints[0].m_x, sizeof (dVector), 0.0f, 0, NULL );
-// NewtonCreateChamferCylinder(m_world,radius,width,NULL);
-// NewtonCreateSphere(m_world,radius,radius,radius,&offmat[0][0]);
-// NewtonCreateCone(m_world,radius,width,NULL);
-// NewtonCreateCapsule(m_world,radius,width,NULL);
-// NewtonCreateChamferCylinder(m_world,radius,width,NULL);
-// NewtonCreateCylinder(m_world,radius*2,width*2,NULL);
-// NewtonCreateBox(m_world,radius*2,radius*2,radius*2,NULL);
-// NewtonCreateConvexHull (m_world, TIRE_SHAPE_SIZE * 2, &shapePoints[0].m_x, sizeof (dVector), 0.0f, NULL);
-
 	m_tiresCount ++;
 }
 
@@ -1109,6 +1100,7 @@ void CustomDGRayCastCar::SubmitConstraints (dFloat timestep, int threadIndex)
 			NewtonUserJointSetRowMinimumFriction (m_joint, -lateralFrictionForceMag);
 
 			// accumulate the longitudinal force
+//			longitudinalForceMag = 100.f;
 			dVector tireForce (tire.m_longitudinalPin.Scale (longitudinalForceMag));
 			tire.m_tireForceAcc += tireForce;
 
