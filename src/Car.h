@@ -62,7 +62,6 @@ private:
 	void turnWheels(float);
 	void rotateWheels(float);
 
-	vector3df getAccelerationForce(dFloat time);
     vector3df position;
 	vector3df direction;
 	float speed;

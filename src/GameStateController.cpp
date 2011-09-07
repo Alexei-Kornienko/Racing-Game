@@ -282,20 +282,29 @@ void GameStateController::newGame()
 	// this is the most efficient but the less accurate mode
 	NewtonSetSolverModel(this->nWorld, 1);
 
+	NewtonSetFrictionModel(this->nWorld, 1);
+
 	IAnimatedMesh * floor = this->smgr->getMesh("res/floor.obj");
-	IAnimatedMeshSceneNode * floorNode = this->smgr->addAnimatedMeshSceneNode(floor); // TODO create normal level
+	IAnimatedMeshSceneNode * floorNode = this->smgr->addAnimatedMeshSceneNode(
+		floor,
+		0,
+		0,
+		vector3df(0,0,0),
+		vector3df(0,0,0),
+		vector3df(2,2,2)
+	); // TODO create normal level
 	vector3df v1 = floorNode->getBoundingBox().MinEdge;
 	vector3df v2 = floorNode->getBoundingBox().MaxEdge;
 
-	dVector minBox(v1.X, v1.Y+0.3f, v1.Z);
+	dVector minBox(v1.X, v1.Y, v1.Z);
 	dVector maxBox(v2.X, v2.Y, v2.Z);
 
 	dVector size(maxBox - minBox);
 	dVector origin((maxBox + minBox).Scale(0.5f));
 
-//	size.m_y = 1.0f;
+	float floorPlaneWidth = 0.1f;
+	size.m_y = floorPlaneWidth;
 	size.m_w = 1.0f;
-//	origin.m_y = 0.5f;
 	origin.m_w = 1.0f;
 
 	dMatrix offset(GetIdentityMatrix());
@@ -303,7 +312,7 @@ void GameStateController::newGame()
 	NewtonCollision* collision = NewtonCreateBox(nWorld, size.m_x, size.m_y, size.m_z, 0, &offset[0][0]);
 
 	dQuaternion q(floorNode->getRotation().X, floorNode->getRotation().Y, floorNode->getRotation().Z, 1.f);
-	dVector v(floorNode->getPosition().X, floorNode->getPosition().Y, floorNode->getPosition().Z);
+	dVector v(floorNode->getPosition().X, floorNode->getPosition().Y+floorPlaneWidth, floorNode->getPosition().Z);
 	dMatrix matrix(q, v);
 
 	NewtonBody* floorBody = NewtonCreateBody(nWorld, collision);
