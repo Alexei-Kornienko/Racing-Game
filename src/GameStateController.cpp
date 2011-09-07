@@ -207,6 +207,9 @@ void GameStateController::setSmgr(ISceneManager *smgr)
 
 void GameStateController::update()
 {
+	if(this->paused) {
+		return;
+	}
 	u32 timeSpan = this->timer->getTime() - this->lastUpdate;
 	float seconds = timeSpan / 1000.f;
 	if(seconds < this->updateInterval) {
@@ -258,6 +261,8 @@ void GameStateController::newGame()
 	this->smgr->clear();
 	this->guienv->clear();
 
+	device->getCursorControl()->setVisible(false);
+
 	this->smgr->addSkyDomeSceneNode(
 		this->driver->getTexture("res/skydome.jpg"),
 		16,
@@ -266,11 +271,6 @@ void GameStateController::newGame()
 		1.2f,
 		90.f
 	);
-
-	IAnimatedMesh * floor = this->smgr->getMesh("res/floor.obj");
-	this->smgr->addAnimatedMeshSceneNode(floor); // TODO create normal level
-
-	device->getCursorControl()->setVisible(false);
 
 	this->nWorld = NewtonCreate();
 
@@ -286,7 +286,43 @@ void GameStateController::newGame()
 	// set the adaptive friction model for faster speed
 	NewtonSetFrictionModel(this->nWorld, 1);
 
-	//this->releaseCars();
+	IAnimatedMesh * floor = this->smgr->getMesh("res/floor.obj");
+	IAnimatedMeshSceneNode * floorNode = this->smgr->addAnimatedMeshSceneNode(floor); // TODO create normal level
+	vector3df v1 = floorNode->getBoundingBox().MinEdge;
+	vector3df v2 = floorNode->getBoundingBox().MaxEdge;
+
+	dVector minBox(v1.X, v1.Y, v1.Z);
+	dVector maxBox(v2.X, v2.Y, v2.Z);
+
+	dVector size(maxBox - minBox);
+	dVector origin((maxBox + minBox).Scale(0.5f));
+
+	size.m_w = 1.0f;
+	origin.m_w = 1.0f;
+
+	dMatrix offset(GetIdentityMatrix());
+	offset.m_posit = origin;
+
+	NewtonCollision* collision = NewtonCreateBox(nWorld, size.m_x, size.m_y, size.m_z, 0, &offset[0][0]);
+
+	dQuaternion q(floorNode->getRotation().X, floorNode->getRotation().Y, floorNode->getRotation().Z, 1.f);
+	dVector v(floorNode->getPosition().X, floorNode->getPosition().Y, floorNode->getPosition().Z);
+	dMatrix matrix(q, v);
+
+
+	NewtonBody* floorBody = NewtonCreateBody(nWorld, collision);
+	NewtonBodySetMatrix(floorBody, &matrix[0][0]);
+
+	NewtonBodySetUserData(floorBody, floorNode);
+
+	dVector inertia;
+	NewtonConvexCollisionCalculateInertialMatrix(collision, &inertia[0], &origin[0]);
+
+	NewtonBodySetMassMatrix(floorBody, 0, 0, 0, 0);
+
+	NewtonBodySetCentreOfMass(floorBody, &origin[0]);
+
+//	this->releaseCars();
 	this->car = new PlayerCar(this);
 	for(u32 i =0; i<AI_COUNT; i++) {
 		this->aiCars.push_back(new AI_Car(this, this->car));

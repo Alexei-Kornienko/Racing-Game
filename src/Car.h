@@ -10,6 +10,7 @@
 
 #include "racingGame.h"
 #include "GameStateController.h"
+#include "lib/CustomDGRayCastCar.h"
 
 class GameStateController;
 
@@ -53,13 +54,14 @@ protected:
 private:
 	void initModels(ISceneManager *);
 	void initPhysics(NewtonWorld *);
+	void initVenichlePhysics(NewtonWorld *);
 
 	void resetMovement();
 
 	void turnWheels(float);
 	void rotateWheels(float);
 
-	dVector getAccelerationForce(dFloat time);
+	vector3df getAccelerationForce(dFloat time);
     vector3df position;
 	vector3df direction;
 	float speed;
@@ -77,6 +79,7 @@ private:
 	int helthPoints;
 
 	NewtonBody* body;
+	CustomDGRayCastCar * newtonCar;
 
 	IAnimatedMesh * carMeshClean;
 	IAnimatedMesh * carMeshDamaged;
