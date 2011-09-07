@@ -257,7 +257,10 @@ void GameStateController::newGame()
 {
 	this->timer->setTime(0);
 	this->smgr->clear();
-	this->smgr->addLightSceneNode(0, vector3df(0,10,0), SColorf(1,1,1));
+	this->smgr->addLightSceneNode(0, vector3df(10,10,10), SColorf(1,1,1),200);
+	this->smgr->addLightSceneNode(0, vector3df(10,10,-10), SColorf(1,1,1),200);
+	this->smgr->addLightSceneNode(0, vector3df(-10,10,10), SColorf(1,1,1),200);
+	this->smgr->addLightSceneNode(0, vector3df(-10,10,-10), SColorf(1,1,1),200);
 	this->guienv->clear();
 
 	device->getCursorControl()->setVisible(false);
@@ -285,16 +288,18 @@ void GameStateController::newGame()
 	NewtonSetFrictionModel(this->nWorld, 1);
 
 	IAnimatedMesh * floor = this->smgr->getMesh("res/floor.obj");
+
+	float scale = 3.0;
 	IAnimatedMeshSceneNode * floorNode = this->smgr->addAnimatedMeshSceneNode(
 		floor,
 		0,
 		0,
 		vector3df(0,0,0),
 		vector3df(0,0,0),
-		vector3df(2,2,2)
+		vector3df(scale,scale,scale)
 	); // TODO create normal level
-	vector3df v1 = floorNode->getBoundingBox().MinEdge;
-	vector3df v2 = floorNode->getBoundingBox().MaxEdge;
+	vector3df v1 = floorNode->getBoundingBox().MinEdge * scale;
+	vector3df v2 = floorNode->getBoundingBox().MaxEdge * scale;
 
 	dVector minBox(v1.X, v1.Y, v1.Z);
 	dVector maxBox(v2.X, v2.Y, v2.Z);

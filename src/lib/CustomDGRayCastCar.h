@@ -132,105 +132,17 @@ public:
 								  dFloat mass, dFloat radius, dFloat with, dFloat friction,
 								  dFloat suspensionLenght, dFloat springConst, dFloat springDamper,	int castMode);
 
-/*
-
-
-	int GetVehicleOnAir() const;
-	int GetTireOnAir(int index) const;
-
-
-
-	virtual void SetBrake (dFloat torque);
-	virtual void SetTorque (dFloat torque);
-	virtual void SetSteering (dFloat angle);
-
-
-
-	void SetTireMaxRPS (int tireIndex, dFloat maxTireRPS);
-
-
-	const NewtonCollision* GetTiresShape (int tireIndex) const;
-
-
-
-
-
-	//
-	void SetVarTireMovePointForceFront (int index, dFloat distance);
-	void SetVarTireMovePointForceRight (int index, dFloat distance);
-	void SetVarTireMovePointForceUp (int index, dFloat distance);
-	//
-	void SetVarFixDeceleration (dFloat value);
-	void SetVarChassisRotationLimit (dFloat value);
-	void SetVarMaxSteerAngle (dFloat value);
-	void SetVarMaxSteerRate (dFloat value);
-	void SetVarMaxSteerForceRate (dFloat value);
-	void SetVarMaxSteerForce (dFloat value);
-	void SetVarMaxSteerSpeedRestriction (dFloat value);
-	void SetVarMaxBrakeForce (dFloat value);
-	void SetVarMaxTorque (dFloat value);
-	void SetVarMaxTorqueRate (dFloat value);
-	void SetVarEngineSteerDiv (dFloat value);
-	void SetVarTireSuspenssionHardLimit (int index, dFloat value);
-	void SetVarTireFriction (int index, dFloat value);
-*/
 	void update(dFloat timestep, int threadIndex);
 protected:
 
 	static unsigned ConvexCastPrefilter(const NewtonBody* body, const NewtonCollision* collision, void* userData);
-//	dFloat CalculateNormalizeForceVsSlipAngle (const Tire& tire, float slipAngle) const;
 	void CalculateTireCollision (Tire& tire, const dMatrix& tireMatrix, int threadIndex) const;
 
 
 	static void IntegrateTires (const NewtonJoint* userJoint, dFloat timestep, int threadIndex);
 	void IntegrateTires (dFloat timestep, int threadIndex);
-/*
-	virtual void GetInfo (NewtonJointRecord* info) const;
-*/
 	virtual void SubmitConstraints (dFloat timestep, int threadIndex);
 	void ApplyTireFrictionVelocitySiding(Tire& tire,const dMatrix& chassisMatrix,const dVector& tireAxelVeloc, const dVector& tireAxelPosit, dFloat timestep, dFloat invTimestep);
-/*
-	void ApplyTireForces (const dMatrix& chassisMatrix, dFloat tiemStep) const;
-	void ApplySuspensionForces (const dMatrix& chassisMatrix, dFloat tiemStep) const;
-	void ApplyTireFrictionModel(const dMatrix& chassisMatrix, dFloat timestep);
-	void ApplyOmegaCorrection();
-	dFloat ApplySuspenssionLimit(Tire& tire);
-	void ApplyChassisForceAndTorque(const dVector& vForce, const dVector& vPoint);
-	void ApplyChassisTorque(const dVector& vForce, const dVector& vPoint);
-	void ApplyDeceleration(Tire& tire);
-	void ApplyTiresTorqueVisual(Tire& tire, dFloat timestep, int threadIndex);
-
-
-
-
-
-
-
-
-
-
-
-	dFloat m_engineTorqueDiv;
-
-
-
-	dFloat m_aerodynamicDrag;       // coefficient of aerodynamics drag
-	dFloat m_aerodynamicDownForce;  // coefficient of aerodynamics down force (inverse lift)
-	dFloat m_chassisRotationLimit;
-	dFloat m_fixDeceleration;
-	dVector m_chassisOmega;         // chassis omega correction
-	dVector m_chassisVelocity;      // chassis velocity correction
-	dVector m_chassisTorque;        // chassis Torque Global
-	int m_tiresRollSide;            // visual rolling side
-	int m_vehicleOnAir;
-
-
-
-
-
-//	dVector m_gravity;
-
-*/
 
 	int m_vehicleOnAir;								// indicate if the vehicle is fliging or not
 	int m_tiresCount;								// current number of tires
@@ -247,12 +159,6 @@ protected:
 	dFloat m_maxBrakeForce;
 	dFloat m_maxSteerForceRate;
 	dFloat m_maxSteerSpeedRestriction;
-
-
-
-//	dFloat m_maxEngineTorque;
-//	dFloat m_maxEngineTorqueRate;
-//	dFloat m_engineTireTorque;		// engine torque
 
 	dMatrix m_localFrame;			// local coordinate system of the vehicle
 

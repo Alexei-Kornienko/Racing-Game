@@ -14,7 +14,7 @@
 // Vehicle Raycast and convexCast Version 3.0b
 //////////////////////////////////////////////////////////////////////
 #include "CustomJointLibraryStdAfx.h"
-#include "CustomDGRayCastCar.h"
+#include "./CustomDGRayCastCar.h"
 
 
 //////////////////////////////////////////////////////////////////////
@@ -204,7 +204,8 @@ void CustomDGRayCastCar::AddSingleSuspensionTire (
 	chassisMatrix = chassisMatrix * chassisMatrix;
 	relTirePos += chassisMatrix.m_up.Scale ( suspensionLenght );
 
-	m_tires[m_tiresCount].m_harpoint              = m_localFrame.UntransformVector( relTirePos );
+//	m_tires[m_tiresCount].m_harpoint              = m_localFrame.UntransformVector( relTirePos );
+	m_tires[m_tiresCount].m_harpoint              = relTirePos;
 	m_tires[m_tiresCount].m_localAxis             = dVector (0.0f, 0.0f, 1.0f, 0.0f);
 	m_tires[m_tiresCount].m_tireAxelPosit         = dVector (0.0f, 0.0f, 0.0f, 1.0f);
 	m_tires[m_tiresCount].m_tireAxelVeloc         = dVector (0.0f, 0.0f, 0.0f, 1.0f);
@@ -418,252 +419,7 @@ void CustomDGRayCastCar::SetTireSteerAngleForce (int index, dFloat angle, dFloat
 	m_tires[index].m_localAxis.m_z = dCos (angle);
 	m_tires[index].m_localAxis.m_x = dSin (angle);
 
-//	if (m_tiresRollSide==0) {
-//		m_tires[index].m_turnforce = turnforce;
-//	} else {
-//		m_tires[index].m_turnforce = -turnforce;
-//	}
 }
-
-
-#if 0
-void CustomDGRayCastCar::SetVarChassisRotationLimit (dFloat value)
-{
-	m_chassisRotationLimit = value;
-}
-
-void CustomDGRayCastCar::SetVarFixDeceleration (dFloat value)
-{
-	m_fixDeceleration = value;
-}
-
-void CustomDGRayCastCar::SetVarMaxSteerAngle (dFloat value)
-{
-	m_maxSteerAngle = value * DefPO;
-}
-
-void CustomDGRayCastCar::SetVarMaxSteerRate (dFloat value)
-{
-	m_maxSteerRate = value;
-}
-
-void CustomDGRayCastCar::SetVarMaxSteerForceRate (dFloat value)
-{
-	m_maxSteerForceRate = value;
-}
-
-void CustomDGRayCastCar::SetVarMaxSteerForce (dFloat value)
-{
-	m_maxSteerForce = value;
-}
-
-void CustomDGRayCastCar::SetVarMaxSteerSpeedRestriction (dFloat value)
-{
-	m_maxSteerSpeedRestriction = value;
-}
-
-void CustomDGRayCastCar::SetVarMaxBrakeForce (dFloat value)
-{
-	m_maxBrakeForce = value;
-}
-
-void CustomDGRayCastCar::SetVarMaxTorque (dFloat value)
-{
-	m_maxTorque = value;
-}
-
-void CustomDGRayCastCar::SetVarMaxTorqueRate (dFloat value)
-{
-	m_maxTorqueRate = value;
-}
-
-void CustomDGRayCastCar::SetVarEngineSteerDiv (dFloat value)
-{
-	m_engineSteerDiv = value;
-}
-
-
-
-int CustomDGRayCastCar::GetVehicleOnAir() const
-{
-	return m_vehicleOnAir;
-}
-
-int CustomDGRayCastCar::GetTireOnAir(int index) const
-{
-	const Tire& tire = m_tires[index];
-	return tire.m_tireIsOnAir;
-}
-
-const NewtonCollision* CustomDGRayCastCar::GetTiresShape (int tireIndex) const
-{
-	const Tire& tire = m_tires[tireIndex];
-	return tire.m_shape;
-}
-
-void CustomDGRayCastCar::GetInfo (NewtonJointRecord* info) const
-{
-}
-
-//this function is to be overloaded by a derive class
-void CustomDGRayCastCar::SetSteering (dFloat angle)
-{
-}
-
-//this function is to be overloaded by a derive class
-void CustomDGRayCastCar::SetBrake (dFloat torque)
-{
-}
-
-//this function is to be overloaded by a derive class
-void CustomDGRayCastCar::SetTorque (dFloat torque)
-{
-}
-
-
-void CustomDGRayCastCar::SetTireMaxRPS (int tireIndex, dFloat maxTireRPS)
-{
-	m_tires[tireIndex].m_maxTireRPS = maxTireRPS;
-}
-
-void CustomDGRayCastCar::SetVarTireSuspenssionHardLimit (int index, dFloat value)
-{
-	m_tires[index].m_suspenssionHardLimit = value;
-}
-
-void CustomDGRayCastCar::SetVarTireFriction (int index, dFloat value)
-{
-	m_tires[index].m_groundFriction = value;
-}
-
-
-
-
-
-
-
-dFloat CustomDGRayCastCar::GenerateTiresBrake (dFloat value)
-{
-	return value * m_maxBrakeForce;
-}
-
-
-
-
-void CustomDGRayCastCar::SetVarTireMovePointForceFront (int index, dFloat distance)
-{
-	m_tires[index].m_MovePointForceFront = distance;
-}
-
-void CustomDGRayCastCar::SetVarTireMovePointForceRight (int index, dFloat distance)
-{
-	m_tires[index].m_MovePointForceRight = distance;
-}
-
-void CustomDGRayCastCar::SetVarTireMovePointForceUp (int index, dFloat distance)
-{
-	m_tires[index].m_MovePointForceUp = distance;
-}
-
-
-
-
-dFloat CustomDGRayCastCar::ApplySuspenssionLimit (Tire& tire)
-{
-	// This add a hard suspension limit.
-	// At very high speed the vehicle mass can make get the suspension limit faster.
-	// This solution avoid this problem and push up the suspension.
-	dFloat distance;
-	distance = tire.m_suspensionLenght - tire.m_posit;
-	if (distance>=tire.m_suspensionLenght){
-		// The tire is inside the vehicle chassis.
-		// Normally at this place the tire can't give torque on the wheel because the tire touch the chassis.
-		// Set the tire speed to zero here is a bad idea.
-		// Because the spring coming very bumpy and make the chassis go on any direction.
-		// tire.m_tireSpeed = 0.0f;
-		tire.m_torque = 0.0f;
-		distance = (tire.m_suspensionLenght - tire.m_posit) + tire.m_suspenssionHardLimit;
-	}
-	return distance;
-}
-
-void CustomDGRayCastCar::ApplyOmegaCorrection ()
-{
-	m_chassisOmega = m_chassisOmega.Scale( m_chassisRotationLimit );
-	NewtonBodySetOmega( m_body0, &m_chassisOmega[0] );
-}
-
-void CustomDGRayCastCar::ApplyChassisForceAndTorque (const dVector& vForce, const dVector& vPoint)
-{
-	NewtonBodyAddForce( m_body0, &vForce[0] );
-	ApplyChassisTorque( vForce, vPoint );
-}
-
-void CustomDGRayCastCar::ApplyDeceleration (Tire& tire)
-{
-	if ( dAbs( tire.m_torque ) < 1.0e-3f ){
-		dVector cvel = m_chassisVelocity;
-		cvel = cvel.Scale( m_fixDeceleration );
-		cvel.m_y = m_chassisVelocity.m_y;
-		NewtonBodySetVelocity( m_body0, &cvel.m_x );
-	}
-}
-
-void CustomDGRayCastCar::ApplyChassisTorque (const dVector& vForce, const dVector& vPoint)
-{
-	dVector Torque;
-	dMatrix M;
-	dVector com;
-	NewtonBodyGetCentreOfMass( m_body0, &com[0] );
-	NewtonBodyGetMatrix( m_body0, &M[0][0] );
-	Torque = ( vPoint - M.TransformVector( dVector( com.m_x, com.m_y, com.m_z, 1.0f ) ) ) * vForce;
-	NewtonBodyAddTorque( m_body0, &Torque[0] );
-}
-
-
-
-
-
-
-void CustomDGRayCastCar::ApplyTiresTorqueVisual (Tire& tire, dFloat timestep, int threadIndex)
-{
-	dFloat timestepInv;
-	// get the simulation time
-	timestepInv = 1.0f / timestep;
-	dVector tireRadius (tire.m_contactPoint - tire.m_tireAxelPosit);
-	dFloat tireLinearSpeed;
-	dFloat tireContactSpeed;
-	tireLinearSpeed = tire.m_tireAxelVeloc % tire.m_longitudinalPin;
-	tireContactSpeed = (tire.m_lateralPin * tireRadius) % tire.m_longitudinalPin;
-	//check if any engine torque or brake torque is applied to the tire
-	if (dAbs(tire.m_torque) < 1.0e-3f){
-		//tire is coasting, calculate the tire zero slip angular velocity
-		// this is the velocity that satisfy the constraint equation
-		// V % dir + W * R % dir = 0
-		// where V is the tire Axel velocity
-		// W is the tire local angular velocity
-		// R is the tire radius
-		// dir is the longitudinal direction of of the tire.
-		// this checkup is suposed to fix a infinit division by zero...
-		if ( dAbs(tireContactSpeed)  > 1.0e-3) {
-			tire.m_angularVelocity = - (tireLinearSpeed) / (tireContactSpeed);
-		}
-		tire.m_spinAngle = dMod (tire.m_spinAngle + tire.m_angularVelocity * timestep, 3.14159265f * 2.0f);
-	} else {
-		// tire is under some power, need to do the free body integration to apply the net torque
-		dFloat nettorque = tire.m_angularVelocity;
-		// this checkup is suposed to fix a infinit division by zero...
-		if ( dAbs(tireContactSpeed)  > 1.0e-3) {
-			nettorque = - (tireLinearSpeed) / (tireContactSpeed);
-		}
-		//tire.m_angularVelocity = - tireLinearSpeed / tireContactSpeed;
-		dFloat torque;
-		torque = tire.m_torque - nettorque - tire.m_angularVelocity * tire.m_Ixx * 0.1f;
-		tire.m_angularVelocity  += torque * tire.m_IxxInv * timestep;
-		tire.m_spinAngle = dMod (tire.m_spinAngle + tire.m_angularVelocity * timestep, 3.14159265f * 2.0f);
-	}
-}
-#endif
 
 
 unsigned CustomDGRayCastCar::ConvexCastPrefilter (const NewtonBody* body, const NewtonCollision* collision, void* userData)
@@ -765,9 +521,6 @@ void CustomDGRayCastCar::ApplyTireFrictionVelocitySiding (Tire& tire, const dMat
 	dFloat frictionCircleMag;
 	dFloat lateralFrictionForceMag;
 	dFloat longitudinalFrictionForceMag;
-//	dFloat tireContactSpeed;
-//	dFloat tireRelativeSpeed;
-//	dFloat lateralForceMagnitud;
 
 	// calculate relative velocity at the tire center
 	dVector tireAxelRelativeVelocity (tireAxelVeloc - tire.m_hitBodyPointVelocity); 
@@ -839,51 +592,6 @@ void CustomDGRayCastCar::IntegrateTires (dFloat timestep, int threadIndex)
 
 	for (int i = 0; i < m_tiresCount; i ++ ) {
 		Tire& tire = m_tires[i];
-/*
-		if (tire.m_tireIsConstrained) {
-			// the torqued generate by the tire can no be larger than the external torque on the tire 
-			// when this happens ther tire is spinning unde contrained rotation 
-
-			// V % dir + W * R % dir = 0
-			// where V is the tire Axel velocity
-			// W is the tire local angular velocity
-			// R is the tire radius
-			// dir is the longitudinal direction of of the tire.
-
-			dFloat contactRadius;
-			dFloat axelLinealSpeed;
-			dVector tireAxelPosit (chassisMatrix.TransformVector (tire.m_harpoint - m_localFrame.m_up.Scale (tire.m_posit)));
-			dVector tireAxelVeloc = bodyVelocity + bodyOmega * (tireAxelPosit - chassisMatrix.m_posit) - tire.m_hitBodyPointVelocity; 
-			axelLinealSpeed = tireAxelVeloc % chassisMatrix.m_front;
-
-
-			dVector tireRadius (tire.m_contactPoint - tire.m_tireAxelPosit);
-			contactRadius = (tire.m_lateralPin * tireRadius) % tire.m_longitudinalPin;
-			tire.m_angularVelocity = - axelLinealSpeed / contactRadius ;
-
-		} else if (tire.m_tireIsOnAir) {
-			if (tire.m_breakForce > 1.0e-3f) {
-				tire.m_angularVelocity = 0.0f;
-			} else {
-				//the tire is on air, need to be integrate net toque and apply a drag coneficenct
-
-	//			dFloat nettorque = tire.m_angularVelocity;
-	//			// this checkup is suposed to fix a infinit division by zero...
-	//			if ( dAbs(tireContactSpeed)  > 1.0e-3) { 
-	//				nettorque = - (tireLinearSpeed) / (tireContactSpeed);
-	//			} 
-				//tire.m_angularVelocity = - tireLinearSpeed / tireContactSpeed;
-				dFloat torque;
-				torque = tire.m_torque - tire.m_angularVelocity * tire.m_Ixx * TIRE_VISCUOS_DAMP;
-				tire.m_angularVelocity += torque * tire.m_IxxInv * timestep;
-			}
-		} else {
-			// there is a next torque on the tire
-			dFloat torque;
-			torque = tire.m_torque - tire.m_angularVelocity * tire.m_Ixx * TIRE_VISCUOS_DAMP;
-			tire.m_angularVelocity += torque * tire.m_IxxInv * timestep;
-		}
-*/
 		if (tire.m_tireIsOnAir) {
 			if (tire.m_breakForce > 1.0e-3f) {
 				tire.m_angularVelocity = 0.0f;
@@ -1100,7 +808,6 @@ void CustomDGRayCastCar::SubmitConstraints (dFloat timestep, int threadIndex)
 			NewtonUserJointSetRowMinimumFriction (m_joint, -lateralFrictionForceMag);
 
 			// accumulate the longitudinal force
-//			longitudinalForceMag = 100.f;
 			dVector tireForce (tire.m_longitudinalPin.Scale (longitudinalForceMag));
 			tire.m_tireForceAcc += tireForce;
 
