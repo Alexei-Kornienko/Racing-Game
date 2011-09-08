@@ -10,14 +10,14 @@
 
 #include "racingGame.h"
 #include "GameStateController.h"
-#include "lib/CustomRayCastCar.h"
+#include "lib/CustomDGRayCastCar.h"
 
 class GameStateController;
 
 void applyCarMoveForce(const NewtonBody* body, dFloat timestep, int threadIndex);
 void applyCarTransform (const NewtonBody* body, const dFloat* matrix, int threadIndex);
 
-class Car : public CustomRayCastCar {
+class Car : public CustomDGRayCastCar {
 friend void applyCarMoveForce(const NewtonBody* body, float timestep, int threadIndex);
     friend void applyCarTransform(const NewtonBody *body, const float *matrix, int threadIndex);
 public:
@@ -56,6 +56,8 @@ private:
     NewtonBody * initPhysics(GameStateController * controller);
     void initVenichlePhysics(NewtonWorld*);
     dMatrix createChassisMatrix();
+
+    dFloat generateTiresSteerAngle (dFloat value);
 
 
 

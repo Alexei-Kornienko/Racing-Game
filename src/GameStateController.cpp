@@ -315,7 +315,7 @@ void GameStateController::newGame()
 		vector3df(0,3,18),
 		vector3df(-20,0,0),
 		vector3df(scale,scale,scale)
-	); // TODO create normal level
+	);
 
     this->createFloorBody(collision, wall1, origin);
 
@@ -324,7 +324,7 @@ void GameStateController::newGame()
 		vector3df(0,3,-18),
 		vector3df(20,0,0),
 		vector3df(scale,scale,scale)
-	); // TODO create normal level
+	);
     this->createFloorBody(collision, wall2, origin);
 
     IAnimatedMeshSceneNode * wall3 = this->smgr->addAnimatedMeshSceneNode(
@@ -332,7 +332,7 @@ void GameStateController::newGame()
 		vector3df(18,3,0),
 		vector3df(0,0,20),
 		vector3df(scale,scale,scale)
-	); // TODO create normal level
+	);
     this->createFloorBody(collision, wall3, origin);
 
 	IAnimatedMeshSceneNode * wall4 = this->smgr->addAnimatedMeshSceneNode(
@@ -340,7 +340,7 @@ void GameStateController::newGame()
 		vector3df(-18,3,0),
 		vector3df(0,0,-20),
 		vector3df(scale,scale,scale)
-	); // TODO create normal level
+	);
 	this->createFloorBody(collision, wall4, origin);
 
 //	this->releaseCars();

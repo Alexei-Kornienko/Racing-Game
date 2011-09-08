@@ -42,7 +42,7 @@ void PlayerCar::update(dFloat timeSpan, int index)
 	} else if(this->controller->isKeyDown(KEY_KEY_D)) {
 		this->doTurnRight();
 	} else {
-
+		this->SetSteering(0);
 	}
 	Car::update(timeSpan, index);
 	//this->camera->setTarget(this->carNode->getPosition());

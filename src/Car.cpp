@@ -108,7 +108,7 @@ NewtonBody * Car::initPhysics(GameStateController * controller) {
 	this->initModels(this->controller->getSmgr());
 	NewtonWorld * nWorld = this->controller->getWorld();
 	NewtonCollision* collision;
-	float mass = JEEP_MASS; // TODO mass is equal to 1 Car :)
+	float mass = JEEP_MASS; // mass is equal to 1 Car :)
 
 	vector3df v1 = this->carNode->getBoundingBox().MinEdge;
 	vector3df v2 = this->carNode->getBoundingBox().MaxEdge;
@@ -228,8 +228,43 @@ void Car::SetTorque(float torque)
 void Car::SetSteering(float angle)
 {
 	// TODO fix parameters
-	this->SetTireSteerAngle(0, angle, 10);
-	this->SetTireSteerAngle(1, angle, 10);
+	angle = this->generateTiresSteerAngle(angle);
+	this->SetTireSteerAngleForce(0, angle, 10);
+	this->SetTireSteerAngleForce(1, angle, 10);
+}
+
+dFloat Car::generateTiresSteerAngle (dFloat value)
+{
+	dFloat steerAngle = this->getWheelsTurn();
+	dFloat m_maxSteerAngle = 35;
+	dFloat m_maxSteerRate = 5;
+	if ( value > 0.0f ) {
+		steerAngle += m_maxSteerRate;
+		if ( steerAngle > m_maxSteerAngle ) {
+			steerAngle = m_maxSteerAngle;
+		}
+	} else if ( value < 0.0f ) {
+		steerAngle -= m_maxSteerRate;
+		if ( steerAngle < -m_maxSteerAngle ) {
+			steerAngle = -m_maxSteerAngle;
+		}
+	} else {
+		if ( steerAngle > 0.0f ) {
+			steerAngle -= m_maxSteerRate;
+			if ( steerAngle < 0.0f ) {
+				steerAngle = 0.0f;
+			}
+		} else {
+			if ( steerAngle < 0.0f ) {
+				steerAngle += m_maxSteerRate;
+				if ( steerAngle > 0.0f ) {
+					steerAngle = 0.0f;
+				}
+			}
+		}
+	}
+
+	return steerAngle;
 }
 
 void Car::update(dFloat timeSpan, int index)
@@ -241,7 +276,7 @@ void Car::update(dFloat timeSpan, int index)
 		Tire t = this->GetTire(i);
 		vector3df rot = this->wheels[i]->getRotation();
 		rot.Y = t.m_steerAngle;
-		rot.X = -t.m_spinAngle * RADTODEG;
+		rot.X = t.m_spinAngle * RADTODEG;
 		this->wheels[i]->setRotation(rot);
 
 		vector3df pos = this->wheels[i]->getPosition();
@@ -274,12 +309,12 @@ void Car::setPosition(const vector3df pos)
 
 void Car::doAccelerate()
 {
-	this->SetTorque(-100); // TODO fix parameters
+	this->SetTorque(-400); // TODO fix parameters
 }
 
 void Car::doReverse()
 {
-	this->SetTorque(50); // TODO fix parameters
+	this->SetTorque(200); // TODO fix parameters
 }
 
 void Car::doBrake()
@@ -299,12 +334,12 @@ void Car::doTurnRight()
 
 vector3df Car::getDirection() const
 {
-	return vector3df(); // TODO implement me
+	return this->carNode->getRelativeTransformation().getRotationDegrees();
 }
 
 float Car::getWheelsTurn() const
 {
-	return 0; // TODO implement me
+	return this->wheelFL->getRotation().Y;
 }
 
 dMatrix Car::createChassisMatrix()
