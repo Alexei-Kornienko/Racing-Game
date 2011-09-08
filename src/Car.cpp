@@ -221,16 +221,18 @@ void Car::SetBrake(float torque)
 
 void Car::SetTorque(float torque)
 {
-	this->SetTireTorque(2, torque);
-	this->SetTireTorque(3, torque);
+	this->SetTireTorque(0, torque);
+	this->SetTireTorque(1, torque);
+//	this->SetTireTorque(2, torque);
+//	this->SetTireTorque(3, torque);
 }
 
 void Car::SetSteering(float angle)
 {
 	// TODO fix parameters
 	angle = this->generateTiresSteerAngle(angle);
-	this->SetTireSteerAngleForce(0, angle, 10);
-	this->SetTireSteerAngleForce(1, angle, 10);
+	this->SetTireSteerAngle(0, angle, 10);
+	this->SetTireSteerAngle(1, angle, 10);
 }
 
 dFloat Car::generateTiresSteerAngle (dFloat value)
