@@ -17,29 +17,47 @@ class GameStateController;
 void applyCarMoveForce(const NewtonBody* body, dFloat timestep, int threadIndex);
 void applyCarTransform (const NewtonBody* body, const dFloat* matrix, int threadIndex);
 
-class Car {
-friend void applyCarMoveForce(const NewtonBody* body, dFloat timestep, int threadIndex);
-friend void applyCarTransform (const NewtonBody* body, const dFloat* matrix, int threadIndex);
-
+class Car : public CustomRayCastCar {
+friend void applyCarMoveForce(const NewtonBody* body, float timestep, int threadIndex);
+    friend void applyCarTransform(const NewtonBody *body, const float *matrix, int threadIndex);
 public:
-	Car(GameStateController * controller);
-	virtual ~Car();
-	virtual void update(dFloat timeSpan) = 0;
+    Car(GameStateController *controller);
+    virtual ~Car();
+    virtual void update(dFloat timeSpan, int index);
 
+    int getHelthPoints() const;
+    vector3df getPosition() const;
+    vector3df getDirection() const;
+    float getWheelsTurn() const;
+
+    void setPosition(const vector3df pos);
+
+    virtual void SetBrake(dFloat torque);
+	virtual void SetTorque(dFloat torque);
+	virtual void SetSteering (dFloat angle);
 protected:
+    GameStateController *controller;
+    IAnimatedMeshSceneNode *carNode;
+    IAnimatedMeshSceneNode * wheels[4];
+    IAnimatedMeshSceneNode *wheelFL;
+    IAnimatedMeshSceneNode *wheelFR;
+    IAnimatedMeshSceneNode *wheelBL;
+    IAnimatedMeshSceneNode *wheelBR;
 
-	GameStateController * controller;
-	IAnimatedMeshSceneNode * carNode;
-
-	IAnimatedMeshSceneNode * wheelFL;
-	IAnimatedMeshSceneNode * wheelFR;
-	IAnimatedMeshSceneNode * wheelBL;
-	IAnimatedMeshSceneNode * wheelBR;
+    void doAccelerate();
+    void doReverse();
+    void doBrake();
+    void doTurnLeft();
+    void doTurnRight();
 
 private:
-	void initModels(ISceneManager *);
-	void initPhysics(NewtonWorld *);
-	void initVenichlePhysics(NewtonWorld *);
+    void init();
+    IAnimatedMeshSceneNode * initModels(ISceneManager*);
+    NewtonBody * initPhysics(GameStateController * controller);
+    void initVenichlePhysics(NewtonWorld*);
+    dMatrix createChassisMatrix();
+
+
 
 	int helthPoints;
 

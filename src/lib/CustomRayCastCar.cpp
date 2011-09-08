@@ -9,18 +9,12 @@
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-#ifdef USE_MASTER_KOOM_VARIANCE
-
-
-
-
 CustomRayCastCar::CustomRayCastCar(int maxTireCount, const dMatrix& cordenateSytem, NewtonBody* carBody, const dVector& gravity)
 	:NewtonCustomJoint(0, carBody, NULL), m_gravity (gravity)
 {
 	dVector com;
 	dMatrix tmp;
 
-	m_gravity.m_y = -12.0f;
 	m_tiresRollSide = 0;
 
 	// set the chassis matrix at the center of mass
@@ -29,8 +23,9 @@ CustomRayCastCar::CustomRayCastCar(int maxTireCount, const dMatrix& cordenateSyt
 
 	// set the joint reference point at the center of mass of the body
 	dMatrix chassisMatrix (cordenateSytem);
+//	chassisMatrix.m_posit += com;
+//	m_localFrame = chassisMatrix;
 	chassisMatrix.m_posit += chassisMatrix.RotateVector(com);
-
 	CalculateLocalMatrix (chassisMatrix, m_localFrame, tmp);
 
 	// allocate space for the tires;
@@ -46,6 +41,10 @@ CustomRayCastCar::CustomRayCastCar(int maxTireCount, const dMatrix& cordenateSyt
 	dFloat Izz;
 	NewtonBodyGetMassMatrix(m_body0, &m_mass, &Ixx, &Iyy, &Izz);
 
+	// TODO uncomment
+	m_gravity.m_x *= m_mass;
+	m_gravity.m_y *= m_mass;
+	m_gravity.m_z *= m_mass;
 	// register the callback for tire integration
 //	NewtonUserJointSetFeedbackCollectorCallback (m_joint, IntegrateTires);
 }
@@ -189,7 +188,7 @@ void CustomRayCastCar::AddSingleSuspensionTire (
 		shapePoints[i + TIRE_SHAPE_SIZE].m_y = shapePoints[i].m_y;
 		shapePoints[i + TIRE_SHAPE_SIZE].m_z = shapePoints[i].m_z;
 	}
-	m_tires[m_tiresCount].m_shape = NewtonCreateConvexHull (m_world, TIRE_SHAPE_SIZE * 2, &shapePoints[0].m_x, sizeof (dVector), 0.0f, NULL);
+	m_tires[m_tiresCount].m_shape = NewtonCreateConvexHull (m_world, TIRE_SHAPE_SIZE * 2, &shapePoints[0].m_x, sizeof (dVector), 0.0f, 0, NULL);
 
 	// calculate the tire geometrical parameters
 	m_tires[m_tiresCount].m_radius = radius;
@@ -320,7 +319,7 @@ void CustomRayCastCar::CalculateTireCollision (Tire& tire, const dMatrix& suspen
   }
 }
 
-void CustomRayCastCar::SubmitConstrainst(dFloat timestep, int threadIndex)
+void CustomRayCastCar::SubmitConstraints(dFloat timestep, int threadIndex)
 {
 	dFloat invTimestep;
 	dMatrix bodyMatrix;
@@ -415,6 +414,7 @@ void CustomRayCastCar::SubmitConstrainst(dFloat timestep, int threadIndex)
 		}
 		ApplyTiresTorqueVisual(tire,timestep,threadIndex);
 	}
+	NewtonBodyAddForce(m_body0, &m_gravity[0]);
 	// set the current vehicle speed
 	m_curSpeed = bodyMatrix[0] % m_chassisVelocity;
 	if (m_curSpeed>0) {

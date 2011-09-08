@@ -208,20 +208,9 @@ void GameStateController::update(u32 timeSpan)
 	if(this->paused) {
 		return;
 	}
-
-	float seconds = timeSpan / 1000.f;
-
-	if(this->car) {
+	if(this->nWorld) {
 		NewtonUpdate(this->nWorld,1.0f/this->driver->getFPS());
-//		NewtonCreate
-		this->car->update(timeSpan);
-		u32 size = this->aiCars.size();
-		for(u32 i =0; i<size; i++) {
-			this->aiCars[i]->update(timeSpan);
-		}
 	}
-
-
 }
 
 
@@ -263,6 +252,8 @@ void GameStateController::newGame()
 	this->smgr->addLightSceneNode(0, vector3df(-10,10,-10), SColorf(1,1,1),200);
 	this->guienv->clear();
 
+	this->textField = this->guienv->addStaticText(0, recti(10,10,200,50), false, true);
+
 	device->getCursorControl()->setVisible(false);
 
 	this->smgr->addSkyDomeSceneNode(
@@ -278,7 +269,7 @@ void GameStateController::newGame()
 
 	// set a fix world size
 	dVector minSize (-500.0f, -10.f, -500.0f);
-	dVector maxSize ( 500.0f,  50.0f,  500.0f);
+	dVector maxSize ( 500.0f,  30.0f,  500.0f);
 	NewtonSetWorldSize(this->nWorld, &minSize[0], &maxSize[0]);
 
 	// configure the Newton world to use iterative solve mode 0
@@ -320,8 +311,8 @@ void GameStateController::newGame()
 	dVector v(floorNode->getPosition().X, floorNode->getPosition().Y+floorPlaneWidth, floorNode->getPosition().Z);
 	dMatrix matrix(q, v);
 
-	NewtonBody* floorBody = NewtonCreateBody(nWorld, collision);
-	NewtonBodySetMatrix(floorBody, &matrix[0][0]);
+	NewtonBody* floorBody = NewtonCreateBody(nWorld, collision, &matrix[0][0]);
+//	NewtonBodySetMatrix(floorBody, &matrix[0][0]);
 
 	NewtonBodySetUserData(floorBody, floorNode);
 
@@ -389,6 +380,11 @@ NewtonWorld *GameStateController::getWorld() const
     return nWorld;
 }
 
+IGUIStaticText *GameStateController::getTextField() const
+{
+	return this->textField;
+}
+
 void GameStateController::releaseCars()
 {
 	if(this->nWorld) {
@@ -397,17 +393,17 @@ void GameStateController::releaseCars()
 		this->nWorld = 0;
 	}
 
-	if(this->car) {
-		delete this->car;
-		this->car = 0;
-	}
-	u32 size = this->aiCars.size();
-	for(u32 i =0; i<size; i++) {
-		if(this->aiCars[i]) {
-			delete this->aiCars[i];
-		}
-	}
-	this->aiCars.erase(0, size);
+//	if(this->car) {
+//		delete this->car;
+//		this->car = 0;
+//	}
+//	u32 size = this->aiCars.size();
+//	for(u32 i =0; i<size; i++) {
+//		if(this->aiCars[i]) {
+//			delete this->aiCars[i];
+//		}
+//	}
+	this->aiCars.erase(0, this->aiCars.size());
 }
 
 

@@ -27,7 +27,7 @@ void AI_Car::update(dFloat timeSpan)
 	vector3df targetAngle = targetVector.getHorizontalAngle();
 	float resultAngle = targetAngle.Y - direction.Y;
 
-	float rotation = this->getWheelsTurn() * this->getSpeed() * timeSpan*2;
+	float rotation = this->getWheelsTurn() * this->GetSpeed() * timeSpan*2;
 
 	resultAngle -= rotation;
 	if(resultAngle > 10) {
@@ -39,7 +39,7 @@ void AI_Car::update(dFloat timeSpan)
 	if(targetVector.getLength() > 2 && fabs(this->getWheelsTurn() < 30)) {
 		this->doAccelerate();
 	} else {
-		if(this->getSpeed() > -2) {
+		if(this->GetSpeed() > -2) {
 			this->doBrake();
 		}
 	}

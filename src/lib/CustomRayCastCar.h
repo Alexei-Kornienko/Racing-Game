@@ -10,7 +10,6 @@
 
 #define USE_MASTER_KOOM_VARIANCE
 
-// Master K00m modification
 class JOINTLIBRARY_API CustomRayCastCar: public NewtonCustomJoint
 {
 	public:
@@ -53,7 +52,7 @@ class JOINTLIBRARY_API CustomRayCastCar: public NewtonCustomJoint
 		dFloat m_tireLoad;				   // force generate by the suspension compression (must be alway positive)
 		dFloat m_steerAngle;               // current tire steering angle
 		dFloat m_spinAngle;                // current tire spin angle
-		dFloat m_angularVelocity;          // current tire spin angle
+		dFloat m_angularVelocity;          // current tire spin velocity
 		//int m_tireJacobianRowIndex;		   // index to the jacobian row that calculated the tire last force.
 		int	m_tireUseConvexCastMode;      // default to false (can be set to true for fast LOD cars)
 	};
@@ -95,9 +94,7 @@ class JOINTLIBRARY_API CustomRayCastCar: public NewtonCustomJoint
 	dFloat CalculateNormalizeForceVsSlipAngle (const Tire& tire, float slipAngle) const;
 	void CalculateTireCollision (Tire& tire, const dMatrix& suspensionMatrixInGlobalSpace) const;
 
-	virtual void SubmitConstrainst (dFloat timestep, int threadIndex);
-
-
+	virtual void SubmitConstraints (dFloat timestep, int threadIndex);
 
 
 	virtual void GetInfo (NewtonJointRecord* info) const;

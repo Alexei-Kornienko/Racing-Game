@@ -22,6 +22,7 @@ void applyCarMoveForce(const NewtonBody* body, dFloat timestep, int threadIndex)
 	Car* car = (Car*) NewtonBodyGetUserData(body);
 	if (car)
 	{
+		car->update(timestep, threadIndex);
 	}
 }
 
@@ -36,38 +37,34 @@ void applyCarTransform (const NewtonBody* body, const dFloat* matrix, int thread
 	}
 }
 
-Car::Car(GameStateController * controller)
+
+
+Car::Car(GameStateController * controller) :
+	CustomRayCastCar(4,
+		this->createChassisMatrix(),
+		this->initPhysics(controller),
+		dVector(0.0f, -10.f, 0.0f, 1.0f)
+	)
 {
-	this->controller = controller;
-
-	this->position = vector3df(0,5,0);
-	this->direction = vector3df(0,0,1);
-	this->helthPoints = 100;
-	this->speed = 0;
-
-	this->resetMovement();
-
-	// Experimental constants
-	this->acceleration = 100.0f;
-	this->frictionBrakes = 100.0f;
-	this->frictionForward = 0.0f;
-	this->frictionSide = 0.0f;
-
-	this->initModels(controller->getSmgr());
-	this->initPhysics(controller->getWorld());
-	this->initVenichlePhysics(controller->getWorld());
+    this->init();
+	//this->initVenichlePhysics(this->controller->getWorld());
 
 }
 
-void Car::initModels(ISceneManager * smgr) {
+void Car::init()
+{
+    this->helthPoints = 100;
+}
+
+IAnimatedMeshSceneNode * Car::initModels(ISceneManager * smgr) {
 	this->carMeshClean = smgr->getMesh("res/carC.obj");
 	this->carMeshDamaged = smgr->getMesh("res/carD.obj");
 	this->carNode = smgr->addAnimatedMeshSceneNode(
 		this->carMeshClean,
 		0,
 		-1,
-		this->position,
-		this->direction
+		vector3df(0,2,0),
+		vector3df(0,0,0)
 	);
 
 
@@ -82,28 +79,36 @@ void Car::initModels(ISceneManager * smgr) {
 		-1,
 		vector3df(0.3065f, wheelPosY, 0.619f)
 	);
-
+	this->wheels[0] = this->wheelFR;
 	this->wheelFL = smgr->addAnimatedMeshSceneNode(
 		this->wheelMesh,
 		this->carNode,
 		-1,
 		vector3df(-0.3065f, wheelPosY, 0.619f)
 	);
+	this->wheels[1] = this->wheelFL;
 	this->wheelBR = smgr->addAnimatedMeshSceneNode(
 		this->wheelMesh,
 		this->carNode,
 		-1,
 		vector3df(0.3065f, wheelPosY, -0.55f)
 	);
+	this->wheels[2] = this->wheelBR;
 	this->wheelBL = smgr->addAnimatedMeshSceneNode(
 		this->wheelMesh,
 		this->carNode,
 		-1,
 		vector3df(-0.3065f, wheelPosY, -0.55f)
 	);
+	this->wheels[3] = this->wheelBL;
+
+	return this->carNode;
 }
 
-void Car::initPhysics(NewtonWorld * nWorld) {
+NewtonBody * Car::initPhysics(GameStateController * controller) {
+	this->controller = controller;
+	this->initModels(this->controller->getSmgr());
+	NewtonWorld * nWorld = this->controller->getWorld();
 	NewtonCollision* collision;
 	float mass = JEEP_MASS; // TODO mass is equal to 1 Car :)
 
@@ -127,91 +132,36 @@ void Car::initPhysics(NewtonWorld * nWorld) {
 	dVector inertia;
 
 	dQuaternion q(this->carNode->getRotation().X, this->carNode->getRotation().Y, this->carNode->getRotation().Z, 1.f);
-	dVector v(this->getPosition().X, this->getPosition().Y, this->getPosition().Z);
+	dVector v(this->carNode->getPosition().X, this->carNode->getPosition().Y, this->carNode->getPosition().Z);
 	dMatrix matrix(q, v);
 
-	this->body = NewtonCreateBody(nWorld, collision);
-	NewtonBodySetMatrix(this->body, &matrix[0][0]);
+	this->body = NewtonCreateBody(nWorld, collision, &matrix[0][0]);
 	NewtonBodySetUserData(this->body, this);
 	NewtonConvexCollisionCalculateInertialMatrix(collision, &inertia[0], &origin[0]);
+//	inertia.m_x = 500.0f;
+//	inertia.m_y = 500.0f;
+//	inertia.m_z = -500.0f;
 	NewtonBodySetMassMatrix(this->body, mass, mass * inertia.m_x, mass * inertia.m_y, mass * inertia.m_z);
+//	NewtonBodySetMassMatrix(this->body, mass, inertia.m_x, inertia.m_y, inertia.m_z);
 	NewtonBodySetCentreOfMass(this->body, &origin[0]);
 	NewtonBodySetForceAndTorqueCallback(this->body, applyCarMoveForce);
 	NewtonBodySetTransformCallback(this->body, applyCarTransform);
+	return this->body;
 }
 
-Car::~Car()
-{
-}
-
-int Car::getHelthPoints() const
-{
-    return helthPoints;
-}
-
-void Car::setPosition(const vector3df position)
-{
-	dQuaternion q(this->carNode->getRotation().X, this->carNode->getRotation().Y, this->carNode->getRotation().Z, 1.f);
-	vector3df scalePos = position;// * IRR_TO_NEWTON;
-	dVector v(scalePos.X, scalePos.Y, scalePos.Z);
-	dMatrix matrix(q, v);
-	NewtonBodySetMatrix(this->body, &matrix[0][0]);
-}
-
-void Car::resetMovement() {
-	this->accelerate = false;
-	this->reverse = false;
-	this->brake = false;
-	this->turnRigth = false;
-	this->turnLeft = false;
-}
-
-void Car::doAccelerate()
-{
-	this->accelerate = true;
-}
-
-void Car::doBrake()
-{
-	this->brake = true;
-}
-
-void Car::doTurnLeft()
-{
-	this->turnLeft = true;
-}
-
-void Car::doTurnRight()
-{
-	this->turnRigth = true;
-}
 
 void Car::initVenichlePhysics(NewtonWorld *nWorld)
 {
 
-	// set the vehicle local coordinate system
-	dMatrix chassisMatrix;
-	// if you vehicle move along the z direction you can use
-	chassisMatrix.m_front = dVector (0.0f, 0.0f, 1.0f, 0.0);
-	chassisMatrix.m_up	  = dVector (0.0f, 1.0f, 0.0f, 0.0f);			// this is the downward vehicle direction
-	chassisMatrix.m_right = chassisMatrix.m_front * chassisMatrix.m_up;	// this is in the side vehicle direction (the plane of the wheels)
-	chassisMatrix.m_posit = dVector (0.0f, 0.0f, 0.0f, 1.0f);
-	this->newtonCar = new CustomRayCastCar( // FIXME
-		4,
-		chassisMatrix,
-		this->body,
-		dVector gravityForce(0.0f, -1.f, 0.0f, 1.0f)
-	);
-
 	float wheelMass = JEEP_TIRE_MASS;
 	float wheelRaduis = 0.147f;
+//	float wheelRaduis = 3.147f;
 	float wheelWidth = 0.104f;
-	float wheelFriction = 2.5f;
-	float suspensionLenght = wheelRaduis/4;
+	float suspensionLenght = 0;
 
 	int castMode = 0;
 
-	this->newtonCar->AddSingleSuspensionTire(
+	this->AddSingleSuspensionTire(
 			this->wheelFR,
 			dVector(this->wheelFR->getPosition().X,this->wheelFR->getPosition().Y,this->wheelFR->getPosition().Z, 1.0f),
 			wheelMass,
@@ -222,7 +172,7 @@ void Car::initVenichlePhysics(NewtonWorld *nWorld)
 			JEEP_SUSPENSION_DAMPER,
 			castMode
 	);
-	this->newtonCar->AddSingleSuspensionTire(
+	this->AddSingleSuspensionTire(
 			this->wheelFL,
 			dVector(this->wheelFL->getPosition().X,this->wheelFL->getPosition().Y,this->wheelFL->getPosition().Z, 1.0f),
 			wheelMass,
@@ -233,7 +183,7 @@ void Car::initVenichlePhysics(NewtonWorld *nWorld)
 			JEEP_SUSPENSION_DAMPER,
 			castMode
 	);
-	this->newtonCar->AddSingleSuspensionTire(
+	this->AddSingleSuspensionTire(
 			this->wheelBR,
 			dVector(this->wheelBR->getPosition().X,this->wheelBR->getPosition().Y,this->wheelBR->getPosition().Z, 1.0f),
 			wheelMass,
@@ -244,7 +194,7 @@ void Car::initVenichlePhysics(NewtonWorld *nWorld)
 			JEEP_SUSPENSION_DAMPER,
 			castMode
 	);
-	this->newtonCar->AddSingleSuspensionTire(
+	this->AddSingleSuspensionTire(
 			this->wheelBL,
 			dVector(this->wheelBL->getPosition().X,this->wheelBL->getPosition().Y,this->wheelBL->getPosition().Z, 1.0f),
 			wheelMass,
@@ -257,6 +207,121 @@ void Car::initVenichlePhysics(NewtonWorld *nWorld)
 	);
 }
 
-void Car::doReverse() {
-	this->reverse = true;
+void Car::SetBrake(float torque)
+{
+	int count = this->GetTiresCount();
+	for(int i=0; i<count; i++) {
+		this->SetTireBrake(i,torque);
+	}
+}
+
+void Car::SetTorque(float torque)
+{
+	this->SetTireTorque(2, torque);
+	this->SetTireTorque(3, torque);
+}
+
+void Car::SetSteering(float angle)
+{
+	// TODO fix parameters
+	this->SetTireSteerAngle(0, angle, 100);
+	this->SetTireSteerAngle(1, angle, 100);
+}
+
+void Car::update(dFloat timeSpan, int index)
+{
+	this->SubmitConstraints(timeSpan, index);
+
+	int tCount = this->GetTiresCount();
+	for(int i=0; i<tCount; i++) {
+		Tire t = this->GetTire(i);
+		vector3df rot = this->wheels[i]->getRotation();
+		rot.Y = t.m_steerAngle;
+		rot.X = t.m_spinAngle * RADTODEG;
+		this->wheels[i]->setRotation(rot);
+//		t.m_harpoint = this->m_localFrame.UntransformVector(t.m_harpoint);
+//		vector3df pos(t.m_harpoint.m_x, t.m_harpoint.m_y, t.m_harpoint.m_z);
+		vector3df pos(t.m_localAxelPosit.m_x, t.m_localAxelPosit.m_y, t.m_localAxelPosit.m_z);
+		this->wheels[i]->setPosition(pos);
+	}
+	stringw text = "Position";
+	text += stringw(" X:") + stringw(this->carNode->getPosition().X);
+	text += stringw(" Y:") + stringw(this->carNode->getPosition().Y);
+	text += stringw(" Z:") + stringw(this->carNode->getPosition().Z);
+	text += "\nRotation";
+	text += stringw(" X:") + stringw(this->carNode->getRotation().X);
+	text += stringw(" Y:") + stringw(this->carNode->getRotation().Y);
+	text += stringw(" Z:") + stringw(this->carNode->getRotation().Z);
+	this->controller->getTextField()->setText(text.c_str());
+}
+
+vector3df Car::getPosition() const
+{
+	return this->carNode->getPosition();
+}
+
+void Car::setPosition(const vector3df pos)
+{
+	dQuaternion q(this->carNode->getRotation().X, this->carNode->getRotation().Y, this->carNode->getRotation().Z, 1.f);
+	dVector v(pos.X, pos.Y, pos.Z);
+	dMatrix matrix(q, v);
+	NewtonBodySetMatrix(this->body, &matrix[0][0]);
+}
+
+void Car::doAccelerate()
+{
+	this->SetTorque(1000); // TODO fix parameters
+}
+
+void Car::doReverse()
+{
+	this->SetTorque(-500); // TODO fix parameters
+}
+
+void Car::doBrake()
+{
+	this->SetBrake(1000); // TODO fix parameters
+}
+
+void Car::doTurnLeft()
+{
+	this->SetSteering(-30); // TODO fix parameters
+}
+
+void Car::doTurnRight()
+{
+	this->SetSteering(30); // TODO fix parameters
+}
+
+vector3df Car::getDirection() const
+{
+	return vector3df(); // TODO implement me
+}
+
+float Car::getWheelsTurn() const
+{
+	return 0; // TODO implement me
+}
+
+dMatrix Car::createChassisMatrix()
+{
+    // set the vehicle local coordinate system
+    dMatrix chassisMatrix;
+    // if you vehicle move along the z direction you can use
+    chassisMatrix.m_front = dVector(0.0f, 0.0f, 1.0f, 0.0);
+    chassisMatrix.m_up = dVector(0.0f, 1.0f, 0.0f, 0.0f); // this is the downward vehicle direction
+//    chassisMatrix.m_right = dVector(1.0f, 0.0f, 0.0f, 0.0f); // this is in the side vehicle direction (the plane of the wheels)
+//    chassisMatrix.m_right = chassisMatrix.m_front * chassisMatrix.m_up; // this is in the side vehicle direction (the plane of the wheels)
+    chassisMatrix.m_right = chassisMatrix.m_up * chassisMatrix.m_front; // this is in the side vehicle direction (the plane of the wheels)
+    chassisMatrix.m_posit = dVector(0.0f, 0.0f, 0.0f, 1.0f);
+    return chassisMatrix;
+}
+
+Car::~Car()
+{
+}
+
+int Car::getHelthPoints() const
+{
+    return helthPoints;
 }

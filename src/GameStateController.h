@@ -41,7 +41,7 @@ public:
 	void exit();
     ISceneManager *getSmgr() const;
     NewtonWorld *getWorld() const;
-
+    IGUIStaticText * getTextField() const;
 
 protected:
 	u32 lastUpdate;
@@ -54,7 +54,7 @@ private:
 	IVideoDriver * driver;
 	ISceneManager * smgr;
 	IGUIEnvironment * guienv;
-
+	IGUIStaticText * textField;
 	void releaseCars();
 
 	ITimer * timer;
