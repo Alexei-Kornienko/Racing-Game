@@ -11,10 +11,7 @@
 
 #define JEEP_MASS					(900.0f)
 
-#define JEEP_TIRE_MASS				(30.0f)
-#define JEEP_SUSPENSION_LENGTH		(0.2f)
-#define JEEP_SUSPENSION_SPRING		(175.0f)
-#define JEEP_SUSPENSION_DAMPER		(6.0f)
+
 
 void applyCarMoveForce(const NewtonBody* body, dFloat timestep, int threadIndex) {
 	Car* car = (Car*) NewtonBodyGetUserData(body);
@@ -129,24 +126,12 @@ NewtonBody * Car::initPhysics(GameStateController * controller) {
 
 	dVector inertia;
 
-	//	core::quaternion qIrr(rotation);
-	//	dQuaternion q(qIrr.X, qIrr.Y, qIrr.Z, qIrr.W);
-	//	dVector v(this->carNode->getPosition().X, this->carNode->getPosition().Y, this->carNode->getPosition().Z);
-	//	dMatrix matrix;
-
-	//	NewtonConvexHullModifierSetMatrix(collision, &matrix[0][0]);
-	//	this->body = NewtonCreateBody(nWorld, collision, &matrix[0][0]);
-
 	matrix4 m = this->carNode->getRelativeTransformation();
 	NewtonConvexHullModifierSetMatrix(collision, m.pointer());
 	this->body = NewtonCreateBody(nWorld, collision, m.pointer());
 	NewtonBodySetUserData(this->body, this);
 	NewtonConvexCollisionCalculateInertialMatrix(collision, &inertia[0], &origin[0]);
-//	inertia.m_x = 500.0f;
-//	inertia.m_y = 500.0f;
-//	inertia.m_z = -500.0f;
 	NewtonBodySetMassMatrix(this->body, mass, mass * inertia.m_x, mass * inertia.m_y, mass * inertia.m_z);
-//	NewtonBodySetMassMatrix(this->body, mass, inertia.m_x, inertia.m_y, inertia.m_z);
 	NewtonBodySetCentreOfMass(this->body, &origin[0]);
 	NewtonBodySetForceAndTorqueCallback(this->body, applyCarMoveForce);
 	NewtonBodySetTransformCallback(this->body, applyCarTransform);
@@ -156,59 +141,28 @@ NewtonBody * Car::initPhysics(GameStateController * controller) {
 
 void Car::initVenichlePhysics(NewtonWorld *nWorld)
 {
-
-	float wheelMass = JEEP_TIRE_MASS;
+	float wheelMass = 30.0f;
 	float wheelRaduis = 0.147f;
-//	float wheelRaduis = 3.147f;
 	float wheelWidth = 0.104f;
 	float suspensionLenght = 0.1;
-
+	float suspensionSpring = 175.0f;
+	float suspensionDamper = 6.0f;
 	int castMode = 0;
 
-	this->AddSingleSuspensionTire(
-			this->wheelFR,
-			dVector(this->wheelFR->getPosition().X,this->wheelFR->getPosition().Y,this->wheelFR->getPosition().Z, 1.0f),
+	int tCount = 4;
+	for(int i=0; i<tCount; i++) {
+		this->AddSingleSuspensionTire(
+			this->wheels[i],
+			dVector(this->wheels[i]->getPosition().X,this->wheels[i]->getPosition().Y,this->wheels[i]->getPosition().Z, 1.0f),
 			wheelMass,
 			wheelRaduis,
 			wheelWidth,
 			suspensionLenght,
-			JEEP_SUSPENSION_SPRING,
-			JEEP_SUSPENSION_DAMPER,
+			suspensionSpring,
+			suspensionDamper,
 			castMode
-	);
-	this->AddSingleSuspensionTire(
-			this->wheelFL,
-			dVector(this->wheelFL->getPosition().X,this->wheelFL->getPosition().Y,this->wheelFL->getPosition().Z, 1.0f),
-			wheelMass,
-			wheelRaduis,
-			wheelWidth,
-			suspensionLenght,
-			JEEP_SUSPENSION_SPRING,
-			JEEP_SUSPENSION_DAMPER,
-			castMode
-	);
-	this->AddSingleSuspensionTire(
-			this->wheelBR,
-			dVector(this->wheelBR->getPosition().X,this->wheelBR->getPosition().Y,this->wheelBR->getPosition().Z, 1.0f),
-			wheelMass,
-			wheelRaduis,
-			wheelWidth,
-			suspensionLenght,
-			JEEP_SUSPENSION_SPRING,
-			JEEP_SUSPENSION_DAMPER,
-			castMode
-	);
-	this->AddSingleSuspensionTire(
-			this->wheelBL,
-			dVector(this->wheelBL->getPosition().X,this->wheelBL->getPosition().Y,this->wheelBL->getPosition().Z, 1.0f),
-			wheelMass,
-			wheelRaduis,
-			wheelWidth,
-			suspensionLenght,
-			JEEP_SUSPENSION_SPRING,
-			JEEP_SUSPENSION_DAMPER,
-			castMode
-	);
+		);
+	}
 }
 
 void Car::SetBrake(float torque)
@@ -227,19 +181,19 @@ void Car::SetTorque(float torque)
 //	this->SetTireTorque(3, torque);
 }
 
-void Car::SetSteering(float angle)
+void Car::SetSteering(float direction)
 {
-	// TODO fix parameters
-	angle = this->generateTiresSteerAngle(angle);
-	this->SetTireSteerAngle(0, angle, 10);
-	this->SetTireSteerAngle(1, angle, 10);
+	dFloat angle = this->generateTiresSteerAngle(direction);
+	dFloat force = this->generateTiresSteerForce(direction);
+	this->SetTireSteerAngle(0, angle, force);
+	this->SetTireSteerAngle(1, angle, force);
 }
 
 dFloat Car::generateTiresSteerAngle (dFloat value)
 {
 	dFloat steerAngle = this->getWheelsTurn();
-	dFloat m_maxSteerAngle = 35;
-	dFloat m_maxSteerRate = 5;
+	dFloat m_maxSteerAngle = 40.0f ;
+	dFloat m_maxSteerRate = 3;
 	if ( value > 0.0f ) {
 		steerAngle += m_maxSteerRate;
 		if ( steerAngle > m_maxSteerAngle ) {
@@ -256,12 +210,10 @@ dFloat Car::generateTiresSteerAngle (dFloat value)
 			if ( steerAngle < 0.0f ) {
 				steerAngle = 0.0f;
 			}
-		} else {
-			if ( steerAngle < 0.0f ) {
-				steerAngle += m_maxSteerRate;
-				if ( steerAngle > 0.0f ) {
-					steerAngle = 0.0f;
-				}
+		} else if ( steerAngle < 0.0f ) {
+			steerAngle += m_maxSteerRate;
+			if ( steerAngle > 0.0f ) {
+				steerAngle = 0.0f;
 			}
 		}
 	}
@@ -269,22 +221,47 @@ dFloat Car::generateTiresSteerAngle (dFloat value)
 	return steerAngle;
 }
 
+dFloat Car::generateTiresSteerForce (dFloat value)
+{
+//	m_maxBrakeForce = 2.0f * m_mass * 10.0f; // TODO place in the right place
+	dFloat maxSteerForce = 6000.0f;
+	dFloat maxSteerForceRate = 0.03f;
+	dFloat maxSteerSpeedRestriction = 2.0f;
+	dFloat engineSteerDiv = 100.0f;
+
+	dFloat relspeed = dAbs ( this->GetSpeed() );
+	dFloat speed = relspeed * maxSteerForceRate;
+	dFloat result = 0;
+	if ( speed > maxSteerSpeedRestriction ) {
+		speed = maxSteerSpeedRestriction;
+	}
+	if ( value > 0.0f ) {
+		result = -( maxSteerForce * speed ) * ( 1.0f - relspeed / engineSteerDiv );
+	} else if ( value < 0.0f ) {
+		result = ( maxSteerForce * speed ) * ( 1.0f - relspeed / engineSteerDiv );
+	}
+	return result;
+}
+
+void Car::updateWheelsPos()
+{
+    int tCount = this->GetTiresCount();
+    for(int i = 0;i < tCount;i++){
+        Tire t = this->GetTire(i);
+        vector3df rot = this->wheels[i]->getRotation();
+        rot.Y = t.m_steerAngle;
+        rot.X = t.m_spinAngle * RADTODEG;
+        this->wheels[i]->setRotation(rot);
+        vector3df pos = this->wheels[i]->getPosition();
+        pos.Y = t.m_harpoint.m_y - t.m_posit;
+        this->wheels[i]->setPosition(pos);
+    }
+}
+
 void Car::update(dFloat timeSpan, int index)
 {
 	this->SubmitConstraints(timeSpan, index);
-
-	int tCount = this->GetTiresCount();
-	for(int i=0; i<tCount; i++) {
-		Tire t = this->GetTire(i);
-		vector3df rot = this->wheels[i]->getRotation();
-		rot.Y = t.m_steerAngle;
-		rot.X = t.m_spinAngle * RADTODEG;
-		this->wheels[i]->setRotation(rot);
-
-		vector3df pos = this->wheels[i]->getPosition();
-		pos.Y = t.m_harpoint.m_y - t.m_posit;
-		this->wheels[i]->setPosition(pos);
-	}
+    this->updateWheelsPos();
 	stringw text = "Position";
 	text += stringw(" X:") + stringw(this->carNode->getPosition().X);
 	text += stringw(" Y:") + stringw(this->carNode->getPosition().Y);
@@ -346,13 +323,10 @@ dMatrix Car::createChassisMatrix()
 {
     // set the vehicle local coordinate system
     dMatrix chassisMatrix;
-    // if you vehicle move along the z direction you can use
-    chassisMatrix.m_front = dVector(0.0f, 0.0f, 1.0f, 0.0);
-    chassisMatrix.m_up = dVector(0.0f, 1.0f, 0.0f, 0.0f); // this is the downward vehicle direction
-//    chassisMatrix.m_right = dVector(1.0f, 0.0f, 0.0f, 0.0f); // this is in the side vehicle direction (the plane of the wheels)
-//    chassisMatrix.m_right = chassisMatrix.m_front * chassisMatrix.m_up; // this is in the side vehicle direction (the plane of the wheels)
-    chassisMatrix.m_right = chassisMatrix.m_up * chassisMatrix.m_front; // this is in the side vehicle direction (the plane of the wheels)
-    chassisMatrix.m_posit = dVector(0.0f, 0.0f, 0.0f, 1.0f);
+    chassisMatrix.m_front	= dVector(0.0f, 0.0f, 1.0f, 0.0);
+    chassisMatrix.m_up		= dVector(0.0f, 1.0f, 0.0f, 0.0f);
+    chassisMatrix.m_right	= chassisMatrix.m_up * chassisMatrix.m_front;
+    chassisMatrix.m_posit	= dVector(0.0f, 0.0f, 0.0f, 1.0f);
     return chassisMatrix;
 }
 

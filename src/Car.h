@@ -23,41 +23,37 @@ friend void applyCarMoveForce(const NewtonBody* body, float timestep, int thread
 public:
     Car(GameStateController *controller);
     virtual ~Car();
-    virtual void update(dFloat timeSpan, int index);
-
+    virtual void update(float timeSpan, int index);
     int getHelthPoints() const;
     vector3df getPosition() const;
     vector3df getDirection() const;
     float getWheelsTurn() const;
-
     void setPosition(const vector3df pos);
-
-    virtual void SetBrake(dFloat torque);
-	virtual void SetTorque(dFloat torque);
-	virtual void SetSteering (dFloat angle);
+    virtual void SetBrake(float torque);
+    virtual void SetTorque(float torque);
+    virtual void SetSteering(float angle);
 protected:
     GameStateController *controller;
     IAnimatedMeshSceneNode *carNode;
-    IAnimatedMeshSceneNode * wheels[4];
+    IAnimatedMeshSceneNode *wheels[4];
     IAnimatedMeshSceneNode *wheelFL;
     IAnimatedMeshSceneNode *wheelFR;
     IAnimatedMeshSceneNode *wheelBL;
     IAnimatedMeshSceneNode *wheelBR;
-
     void doAccelerate();
     void doReverse();
     void doBrake();
     void doTurnLeft();
     void doTurnRight();
-
 private:
     void init();
-    IAnimatedMeshSceneNode * initModels(ISceneManager*);
-    NewtonBody * initPhysics(GameStateController * controller);
+    IAnimatedMeshSceneNode *initModels(ISceneManager*);
+    NewtonBody *initPhysics(GameStateController *controller);
     void initVenichlePhysics(NewtonWorld*);
     dMatrix createChassisMatrix();
-
-    dFloat generateTiresSteerAngle (dFloat value);
+    float generateTiresSteerAngle(float value);
+    dFloat generateTiresSteerForce (dFloat value);
+    void updateWheelsPos();
 
 
 
