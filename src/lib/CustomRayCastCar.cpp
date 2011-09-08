@@ -34,28 +34,22 @@ CustomRayCastCar::CustomRayCastCar(int maxTireCount, const dMatrix& cordenateSyt
 	m_tires = new Tire[maxTireCount];
 
 	m_curSpeed = 0.0f;
-	m_aerodynamicDrag = 0.1f;
-	m_aerodynamicDownForce = 0.1f;
 
 	dFloat Ixx;
 	dFloat Iyy;
 	dFloat Izz;
 	NewtonBodyGetMassMatrix(m_body0, &m_mass, &Ixx, &Iyy, &Izz);
 
-	// TODO uncomment
 	m_gravity.m_x *= m_mass;
 	m_gravity.m_y *= m_mass;
 	m_gravity.m_z *= m_mass;
-	// register the callback for tire integration
-//	NewtonUserJointSetFeedbackCollectorCallback (m_joint, IntegrateTires);
 }
 
 
 CustomRayCastCar::~CustomRayCastCar()
 {
-	NewtonWorld *world;
+	NewtonWorld *world = NewtonBodyGetWorld (m_body0);
 
-	world = NewtonBodyGetWorld (m_body0);
 	for (int i = 0; i < m_tiresCount; i ++) {
 		NewtonReleaseCollision (world, m_tires[i].m_shape);
 	}
@@ -71,26 +65,9 @@ int CustomRayCastCar::GetTiresCount() const
 	return m_tiresCount;
 }
 
-
-
-
 void CustomRayCastCar::GetInfo (NewtonJointRecord* info) const
 {
-}
-
-//this function is to be overloaded by a derive class
-void CustomRayCastCar::SetSteering (dFloat angle)
-{
-}
-
-//this function is to be overloaded by a derive class
-void CustomRayCastCar::SetBrake (dFloat torque)
-{
-}
-
-//this function is to be overloaded by a derive class
-void CustomRayCastCar::SetTorque (dFloat torque)
-{
+	// TODO Implement me
 }
 
 dFloat CustomRayCastCar::GetSpeed() const
@@ -116,19 +93,18 @@ dFloat CustomRayCastCar::GetParametricPosition (int index) const
 
 void CustomRayCastCar::SetTireSteerAngle (int index, dFloat angle, dFloat turnforce)
 {
-   m_tires[index].m_steerAngle = angle;
-   m_tires[index].m_localAxis.m_z = dCos (angle);
-   m_tires[index].m_localAxis.m_x = dSin (angle);
-	if (m_tiresRollSide==0) {
-	  m_tires[index].m_turnforce = turnforce;
+	m_tires[index].m_steerAngle = angle;
+	m_tires[index].m_localAxis.m_z = dCos (angle);
+	m_tires[index].m_localAxis.m_x = dSin (angle);
+	if (m_tiresRollSide == 0) {
+		m_tires[index].m_turnforce = turnforce;
 	} else {
-	  m_tires[index].m_turnforce = -turnforce;
+		m_tires[index].m_turnforce = -turnforce;
 	}
 }
 
 void CustomRayCastCar::SetTireTorque (int index, dFloat torque)
 {
-//torque=-600.0f;
 	m_tires[index].m_torque = torque;
 }
 
@@ -176,7 +152,6 @@ void CustomRayCastCar::AddSingleSuspensionTire (
 	m_tires[m_tiresCount].m_groundFriction = 2.0f;
 
 	m_tires[m_tiresCount].m_tireUseConvexCastMode = castMode;
-//	m_tires[m_tiresCount].m_tireJacobianRowIndex = -1;
 
 	// make a convex shape to represent the tire collision
 	#define TIRE_SHAPE_SIZE 12
@@ -193,7 +168,6 @@ void CustomRayCastCar::AddSingleSuspensionTire (
 
 	// calculate the tire geometrical parameters
 	m_tires[m_tiresCount].m_radius = radius;
-//	m_tires[m_tiresCount].m_radiusInv  = 1.0f / m_tires[m_tiresCount].m_radius;
 	m_tires[m_tiresCount].m_mass = mass;
 	m_tires[m_tiresCount].m_massInv = 1.0f / m_tires[m_tiresCount].m_mass;
 	m_tires[m_tiresCount].m_Ixx = mass * radius * radius / 2.0f;
@@ -236,7 +210,6 @@ dMatrix CustomRayCastCar::CalculateTireMatrix (int tireIndex) const
 
 }
 
-
 unsigned CustomRayCastCar::ConvexCastPrefilter(const NewtonBody* body, const NewtonCollision* collision, void* userData)
 {
 	NewtonBody* me;
@@ -245,79 +218,78 @@ unsigned CustomRayCastCar::ConvexCastPrefilter(const NewtonBody* body, const New
 	return (me != body);
 }
 
-
-void CustomRayCastCar::CalculateTireCollision (Tire& tire, const dMatrix& suspensionMatrixInGlobalSpace) const
-{
-  // make a data structure to collect the information returned by the ray cast
-  struct RayCastInfo
-  {
-    RayCastInfo(const NewtonBody* body)
-	{
-	  m_param = 1.0f;
-	  m_me = body;
-	  m_hitBody = NULL;
-	}
-	static dFloat RayCast (const NewtonBody* body, const dFloat* normal, int collisionID, void* userData, dFloat intersetParam)
-	{
-	  RayCastInfo& caster = *((RayCastInfo*) userData);
-	  // if this body is not the vehicle, see if a close hit
-	  if (body != caster.m_me) {
-	    if (intersetParam < caster.m_param) {
-	      // this is a close hit, record the information.
-		  caster.m_param = intersetParam;
-		  caster.m_hitBody = body;
-		  caster.m_contactID = collisionID;
-		  caster.m_normal = dVector (normal[0], normal[1], normal[2], 1.0f);
+void CustomRayCastCar::CalculateTireCollision(Tire& tire,
+		const dMatrix& suspensionMatrixInGlobalSpace) const {
+// make a data structure to collect the information returned by the ray cast
+	struct RayCastInfo {
+		RayCastInfo(const NewtonBody* body) {
+			m_param = 1.0f;
+			m_me = body;
+			m_hitBody = NULL;
 		}
-	}
-	return intersetParam;
-  }
-    dFloat m_param;
-    dVector m_normal;
-    const NewtonBody* m_me;
-    const NewtonBody* m_hitBody;
-    int m_contactID;
-  };
-  RayCastInfo info (m_body0);
-  // extend the ray by the radius of the tire
-  dFloat dist (tire.m_suspensionLength + tire.m_radius);
-  dVector destination (suspensionMatrixInGlobalSpace.TransformVector(m_localFrame.m_up.Scale (-dist)));
-  // cast a ray to the world ConvexCastPrefilter
-  NewtonWorldRayCast(m_world, &suspensionMatrixInGlobalSpace.m_posit[0], &destination[0], RayCastInfo::RayCast, &info, &ConvexCastPrefilter);
-  // if the ray hit something, it means the tire has some traction
-  if (info.m_hitBody) {
-    dFloat intesectionDist;
+		static dFloat RayCast(const NewtonBody* body, const dFloat* normal,
+				int collisionID, void* userData, dFloat intersetParam) {
+			RayCastInfo& caster = *((RayCastInfo*) userData);
+			// if this body is not the vehicle, see if a close hit
+			if (body != caster.m_me) {
+				if (intersetParam < caster.m_param) {
+					// this is a close hit, record the information.
+					caster.m_param = intersetParam;
+					caster.m_hitBody = body;
+					caster.m_contactID = collisionID;
+					caster.m_normal = dVector(normal[0], normal[1], normal[2], 1.0f);
+				}
+			}
+			return intersetParam;
+		}
+		dFloat m_param;
+		dVector m_normal;
+		const NewtonBody* m_me;
+		const NewtonBody* m_hitBody;
+		int m_contactID;
+	};
+	RayCastInfo info(m_body0);
+// extend the ray by the radius of the tire
+	dFloat dist(tire.m_suspensionLength + tire.m_radius);
+	dVector destination(
+			suspensionMatrixInGlobalSpace.TransformVector(
+					m_localFrame.m_up.Scale(-dist)));
+// cast a ray to the world ConvexCastPrefilter
+	NewtonWorldRayCast(m_world, &suspensionMatrixInGlobalSpace.m_posit[0],
+			&destination[0], RayCastInfo::RayCast, &info, &ConvexCastPrefilter);
+// if the ray hit something, it means the tire has some traction
+	if (info.m_hitBody) {
+		dFloat intesectionDist;
 
-  tire.m_contactPoint = suspensionMatrixInGlobalSpace.m_posit + (destination - suspensionMatrixInGlobalSpace.m_posit).Scale (info.m_param);
-  tire.m_contactNormal = info.m_normal;
-  // TO DO: get the material properties for tire frictions on different roads
+		tire.m_contactPoint = suspensionMatrixInGlobalSpace.m_posit
+				+ (destination - suspensionMatrixInGlobalSpace.m_posit).Scale(
+						info.m_param);
+		tire.m_contactNormal = info.m_normal;
+// TO DO: get the material properties for tire frictions on different roads
 
-  intesectionDist = dist * info.m_param - tire.m_radius;
-  if (intesectionDist > tire.m_suspensionLength) {
-    intesectionDist = tire.m_suspensionLength;
-  } else if (intesectionDist < dFloat (0.0f)) {
-    intesectionDist = dFloat (0.0f);
-  }
-  tire.m_posit = intesectionDist;
-  switch (info.m_contactID)
-  {
-    case 0:
-	{
-	  // normal ground friction
-	  tire.m_groundFriction = 3.0f;
-	  break;
+		intesectionDist = dist * info.m_param - tire.m_radius;
+		if (intesectionDist > tire.m_suspensionLength) {
+			intesectionDist = tire.m_suspensionLength;
+		} else if (intesectionDist < dFloat(0.0f)) {
+			intesectionDist = dFloat(0.0f);
+		}
+		tire.m_posit = intesectionDist;
+		switch (info.m_contactID) {
+		case 0: {
+// normal ground friction
+			tire.m_groundFriction = 3.0f;
+			break;
+		}
+		default: {
+// default ground friction
+			tire.m_groundFriction = 3.0f;
+			break;
+		}
+		}
+	} else {
+		tire.m_posit = tire.m_suspensionLength;
+		tire.m_groundFriction = 0.0f;
 	}
-	default:
-	{
-	  // default ground friction
-	  tire.m_groundFriction = 3.0f;
-	  break;
-	}
-  }
-  } else {
-    tire.m_posit = tire.m_suspensionLength;
-	tire.m_groundFriction = 0.0f;
-  }
 }
 
 void CustomRayCastCar::SubmitConstraints(dFloat timestep, int threadIndex)

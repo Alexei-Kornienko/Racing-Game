@@ -12,7 +12,7 @@
 
 class JOINTLIBRARY_API CustomRayCastCar: public NewtonCustomJoint
 {
-	public:
+public:
 	struct Tire
 	{
 		// constant data
@@ -36,24 +36,22 @@ class JOINTLIBRARY_API CustomRayCastCar: public NewtonCustomJoint
 		dFloat m_radius;				   // tire Radius
 		dFloat m_maxTireRPS;
 
-//		dFloat m_radiusInv;
 		dFloat m_localLateralSpeed;
 		dFloat m_localSuspentionSpeed;
 		dFloat m_localLongitudinalSpeed;
 		dFloat m_currentSlipVeloc;		   // the tire sleep acceleration
 		dFloat m_springConst;			   // normalized spring Ks
-		dFloat m_springDamper;			   // normal;ized spring Damper Kc
+		dFloat m_springDamper;			   // normalized spring Damper Kc
 		dFloat m_suspensionLength;         // max suspension length
 		dFloat m_groundFriction;		   // coefficient of friction of the ground surface
-		dFloat m_posit;					   // parametric position for this tire ( alway positive value between 0 and m_suspensionLength)
-		dFloat m_torque;				   // tire toque
+		dFloat m_posit;					   // parametric position for this tire ( always positive value between 0 and m_suspensionLength)
+		dFloat m_torque;				   // tire torque
 		dFloat m_turnforce;				   // tire turnforce
 		dFloat m_breakTorque;			   // tire break torque
-		dFloat m_tireLoad;				   // force generate by the suspension compression (must be alway positive)
+		dFloat m_tireLoad;				   // force generate by the suspension compression (must be always positive)
 		dFloat m_steerAngle;               // current tire steering angle
 		dFloat m_spinAngle;                // current tire spin angle
 		dFloat m_angularVelocity;          // current tire spin velocity
-		//int m_tireJacobianRowIndex;		   // index to the jacobian row that calculated the tire last force.
 		int	m_tireUseConvexCastMode;      // default to false (can be set to true for fast LOD cars)
 	};
 
@@ -66,9 +64,9 @@ class JOINTLIBRARY_API CustomRayCastCar: public NewtonCustomJoint
 	Tire& GetTire (int index) const;
 	dFloat GetParametricPosition (int index) const;
 
-	virtual void SetBrake (dFloat torque);
-	virtual void SetTorque (dFloat torque);
-	virtual void SetSteering (dFloat angle);
+	virtual void SetBrake (dFloat torque) = 0;
+	virtual void SetTorque (dFloat torque) = 0;
+	virtual void SetSteering (dFloat angle) = 0;
 
 
 	void AddSingleSuspensionTire (void* userData, const dVector& localPosition,
@@ -80,15 +78,11 @@ class JOINTLIBRARY_API CustomRayCastCar: public NewtonCustomJoint
 
 	const dMatrix& GetChassisMatrixLocal () const;
 	dMatrix CalculateTireMatrix (int tire) const;
-	dMatrix CalculateSuspensionMatrix (int tire, dFloat param) const;
 
-
-	protected:
+protected:
 	void SetTireBrake (int index, dFloat torque);
 	void SetTireTorque (int index, dFloat torque);
 	void SetTireSteerAngle (int index, dFloat angle, dFloat turnforce);
-
-
 
 	static unsigned ConvexCastPrefilter(const NewtonBody* body, const NewtonCollision* collision, void* userData);
 	dFloat CalculateNormalizeForceVsSlipAngle (const Tire& tire, float slipAngle) const;
@@ -96,9 +90,7 @@ class JOINTLIBRARY_API CustomRayCastCar: public NewtonCustomJoint
 
 	virtual void SubmitConstraints (dFloat timestep, int threadIndex);
 
-
 	virtual void GetInfo (NewtonJointRecord* info) const;
-
 
 	void ApplyTireForces (const dMatrix& chassisMatrix, dFloat tiemStep) const;
 	void ApplySuspensionForces (const dMatrix& chassisMatrix, dFloat tiemStep) const;
@@ -108,9 +100,6 @@ class JOINTLIBRARY_API CustomRayCastCar: public NewtonCustomJoint
 	void ApplyTractionAndSteer(const dVector& vForce, const dVector& vPoint);
 	void ApplyTiresTorqueVisual(Tire& tire, dFloat timestep, int threadIndex);
 
-
-	dFloat m_aerodynamicDrag;       // coefficient of aerodynamics drag
-	dFloat m_aerodynamicDownForce;  // coefficient of aerodynamics down force (inverse lift)
     dVector m_chassisOmega;         // chassis omega correction
     dVector m_chassisVelocity;      // chassis velocity correction
     dVector m_chassisForce;         // chassis Force Global
@@ -123,6 +112,9 @@ class JOINTLIBRARY_API CustomRayCastCar: public NewtonCustomJoint
 	int m_tiresCount;				// current number of tires
 	dVector m_gravity;
 	Tire* m_tires;					// tires array
+
+private:
+	dMatrix CalculateSuspensionMatrix (int tire, dFloat param) const;
 };
 
 #endif

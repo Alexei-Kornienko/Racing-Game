@@ -31,7 +31,7 @@ int initWindow(video::E_DRIVER_TYPE type) {
 }
 
 int main() {
-	video::E_DRIVER_TYPE type = video::EDT_OPENGL;
+	video::E_DRIVER_TYPE type = video::EDT_SOFTWARE;
 	if(initWindow(type)) {
 		return 1;
 	}
