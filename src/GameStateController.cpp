@@ -108,6 +108,7 @@ void GameStateController::pause()
 		}
 
 		this->guienv->clear();
+		this->textField = this->guienv->addStaticText(0, recti(10,10,400,100), false, true);
 	} else { // Pause (show pause menu)
 		this->paused = true;
 		if(this->car) {
@@ -252,7 +253,7 @@ void GameStateController::newGame()
 	this->smgr->addLightSceneNode(0, vector3df(-10,10,-10), SColorf(1,1,1),200);
 	this->guienv->clear();
 
-	this->textField = this->guienv->addStaticText(0, recti(10,10,200,50), false, true);
+	this->textField = this->guienv->addStaticText(0, recti(10,10,400,100), false, true);
 
 	device->getCursorControl()->setVisible(false);
 

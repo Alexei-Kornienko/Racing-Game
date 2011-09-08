@@ -23,10 +23,11 @@ CustomRayCastCar::CustomRayCastCar(int maxTireCount, const dMatrix& cordenateSyt
 
 	// set the joint reference point at the center of mass of the body
 	dMatrix chassisMatrix (cordenateSytem);
-//	chassisMatrix.m_posit += com;
-//	m_localFrame = chassisMatrix;
-	chassisMatrix.m_posit += chassisMatrix.RotateVector(com);
-	CalculateLocalMatrix (chassisMatrix, m_localFrame, tmp);
+//	chassisMatrix.m_posit += chassisMatrix.RotateVector(com);
+//	CalculateLocalMatrix (chassisMatrix, m_localFrame, tmp);
+	chassisMatrix.m_posit += com;
+	m_localFrame = chassisMatrix;
+
 
 	// allocate space for the tires;
 	m_tiresCount = 0;
@@ -42,9 +43,9 @@ CustomRayCastCar::CustomRayCastCar(int maxTireCount, const dMatrix& cordenateSyt
 	NewtonBodyGetMassMatrix(m_body0, &m_mass, &Ixx, &Iyy, &Izz);
 
 	// TODO uncomment
-	m_gravity.m_x *= m_mass;
-	m_gravity.m_y *= m_mass;
-	m_gravity.m_z *= m_mass;
+//	m_gravity.m_x *= m_mass;
+//	m_gravity.m_y *= m_mass;
+//	m_gravity.m_z *= m_mass;
 	// register the callback for tire integration
 //	NewtonUserJointSetFeedbackCollectorCallback (m_joint, IntegrateTires);
 }

@@ -33,7 +33,8 @@ void applyCarTransform (const NewtonBody* body, const dFloat* matrix, int thread
 		matrix4 transform;
 		transform.setM(matrix);
 		car->carNode->setPosition(transform.getTranslation());
-		car->carNode->setRotation(transform.getRotationDegrees());
+		vector3df rotation = transform.getRotationDegrees();
+		car->carNode->setRotation(rotation);
 	}
 }
 
@@ -47,7 +48,7 @@ Car::Car(GameStateController * controller) :
 	)
 {
     this->init();
-	//this->initVenichlePhysics(this->controller->getWorld());
+	this->initVenichlePhysics(this->controller->getWorld());
 
 }
 
@@ -63,10 +64,9 @@ IAnimatedMeshSceneNode * Car::initModels(ISceneManager * smgr) {
 		this->carMeshClean,
 		0,
 		-1,
-		vector3df(0,2,0),
-		vector3df(0,0,0)
+		vector3df(0,2,0)
 	);
-
+	this->carNode->setRotation(vector3df(0,30,0));
 
 	this->wheelMesh = smgr->getMesh("res/wheel.obj");
 
@@ -131,11 +131,17 @@ NewtonBody * Car::initPhysics(GameStateController * controller) {
 
 	dVector inertia;
 
-	dQuaternion q(this->carNode->getRotation().X, this->carNode->getRotation().Y, this->carNode->getRotation().Z, 1.f);
-	dVector v(this->carNode->getPosition().X, this->carNode->getPosition().Y, this->carNode->getPosition().Z);
-	dMatrix matrix(q, v);
+	//	core::quaternion qIrr(rotation);
+	//	dQuaternion q(qIrr.X, qIrr.Y, qIrr.Z, qIrr.W);
+	//	dVector v(this->carNode->getPosition().X, this->carNode->getPosition().Y, this->carNode->getPosition().Z);
+	//	dMatrix matrix;
 
-	this->body = NewtonCreateBody(nWorld, collision, &matrix[0][0]);
+	//	NewtonConvexHullModifierSetMatrix(collision, &matrix[0][0]);
+	//	this->body = NewtonCreateBody(nWorld, collision, &matrix[0][0]);
+
+	matrix4 m = this->carNode->getRelativeTransformation();
+	NewtonConvexHullModifierSetMatrix(collision, m.pointer());
+	this->body = NewtonCreateBody(nWorld, collision, m.pointer());
 	NewtonBodySetUserData(this->body, this);
 	NewtonConvexCollisionCalculateInertialMatrix(collision, &inertia[0], &origin[0]);
 //	inertia.m_x = 500.0f;
@@ -239,9 +245,9 @@ void Car::update(dFloat timeSpan, int index)
 		rot.Y = t.m_steerAngle;
 		rot.X = t.m_spinAngle * RADTODEG;
 		this->wheels[i]->setRotation(rot);
-//		t.m_harpoint = this->m_localFrame.UntransformVector(t.m_harpoint);
-//		vector3df pos(t.m_harpoint.m_x, t.m_harpoint.m_y, t.m_harpoint.m_z);
-		vector3df pos(t.m_localAxelPosit.m_x, t.m_localAxelPosit.m_y, t.m_localAxelPosit.m_z);
+		t.m_harpoint = this->m_localFrame.UntransformVector(t.m_harpoint);
+		vector3df pos(t.m_harpoint.m_x, t.m_harpoint.m_y, t.m_harpoint.m_z);
+//		vector3df pos(t.m_localAxelPosit.m_x, t.m_localAxelPosit.m_y, t.m_localAxelPosit.m_z);
 		this->wheels[i]->setPosition(pos);
 	}
 	stringw text = "Position";
