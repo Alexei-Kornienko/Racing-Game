@@ -11,8 +11,8 @@
 AI_Car::AI_Car(GameStateController * controller, Car * targetCar) : Car(controller)
 {
 	this->targetCar = targetCar;
-//	vector3df position((rand()%20) - 10, 0, (rand()%20) - 10);
-	vector3df position(0, 0, -10);
+	vector3df position((rand()%20) - 10, 0, (rand()%20) - 10);
+//	vector3df position(0, 0, -10);
 	this->setPosition(position);
 }
 

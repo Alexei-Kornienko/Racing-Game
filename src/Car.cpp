@@ -303,10 +303,8 @@ vector3df Car::getPosition() const
 
 void Car::setPosition(const vector3df pos)
 {
-	dQuaternion q(this->carNode->getRotation().X, this->carNode->getRotation().Y, this->carNode->getRotation().Z, 1.f);
-	dVector v(pos.X, pos.Y, pos.Z);
-	dMatrix matrix(q, v);
-	NewtonBodySetMatrix(this->body, &matrix[0][0]);
+	this->carNode->setPosition(pos);
+	NewtonBodySetMatrix(this->body, this->carNode->getRelativeTransformation().pointer());
 }
 
 void Car::doAccelerate()
