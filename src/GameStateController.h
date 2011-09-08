@@ -56,6 +56,7 @@ private:
 	IGUIEnvironment * guienv;
 	IGUIStaticText * textField;
 	void releaseCars();
+    void createFloorBody(NewtonCollision *collision, IAnimatedMeshSceneNode *floorNode, dVector origin);
 
 	ITimer * timer;
 	bool paused;

@@ -13,9 +13,7 @@
 
 #define JEEP_TIRE_MASS				(30.0f)
 #define JEEP_SUSPENSION_LENGTH		(0.2f)
-//#define JEEP_SUSPENSION_SPRING		(175.0f)
-//#define JEEP_SUSPENSION_DAMPER		(6.0f)
-#define JEEP_SUSPENSION_SPRING		(100.0f)
+#define JEEP_SUSPENSION_SPRING		(175.0f)
 #define JEEP_SUSPENSION_DAMPER		(6.0f)
 
 void applyCarMoveForce(const NewtonBody* body, dFloat timestep, int threadIndex) {
@@ -66,7 +64,7 @@ IAnimatedMeshSceneNode * Car::initModels(ISceneManager * smgr) {
 		-1,
 		vector3df(0,2,0)
 	);
-	this->carNode->setRotation(vector3df(0,30,0));
+//	this->carNode->setRotation(vector3df(0,30,0));
 
 	this->wheelMesh = smgr->getMesh("res/wheel.obj");
 
@@ -163,7 +161,7 @@ void Car::initVenichlePhysics(NewtonWorld *nWorld)
 	float wheelRaduis = 0.147f;
 //	float wheelRaduis = 3.147f;
 	float wheelWidth = 0.104f;
-	float suspensionLenght = 0;
+	float suspensionLenght = 0.1;
 
 	int castMode = 0;
 
@@ -230,8 +228,8 @@ void Car::SetTorque(float torque)
 void Car::SetSteering(float angle)
 {
 	// TODO fix parameters
-	this->SetTireSteerAngle(0, angle, 100);
-	this->SetTireSteerAngle(1, angle, 100);
+	this->SetTireSteerAngle(0, angle, 10);
+	this->SetTireSteerAngle(1, angle, 10);
 }
 
 void Car::update(dFloat timeSpan, int index)
@@ -243,11 +241,11 @@ void Car::update(dFloat timeSpan, int index)
 		Tire t = this->GetTire(i);
 		vector3df rot = this->wheels[i]->getRotation();
 		rot.Y = t.m_steerAngle;
-		rot.X = t.m_spinAngle * RADTODEG;
+		rot.X = -t.m_spinAngle * RADTODEG;
 		this->wheels[i]->setRotation(rot);
-		t.m_harpoint = this->m_localFrame.UntransformVector(t.m_harpoint);
-		vector3df pos(t.m_harpoint.m_x, t.m_harpoint.m_y, t.m_harpoint.m_z);
-//		vector3df pos(t.m_localAxelPosit.m_x, t.m_localAxelPosit.m_y, t.m_localAxelPosit.m_z);
+
+		vector3df pos = this->wheels[i]->getPosition();
+		pos.Y = t.m_harpoint.m_y - t.m_posit;
 		this->wheels[i]->setPosition(pos);
 	}
 	stringw text = "Position";
@@ -276,12 +274,12 @@ void Car::setPosition(const vector3df pos)
 
 void Car::doAccelerate()
 {
-	this->SetTorque(1000); // TODO fix parameters
+	this->SetTorque(-100); // TODO fix parameters
 }
 
 void Car::doReverse()
 {
-	this->SetTorque(-500); // TODO fix parameters
+	this->SetTorque(50); // TODO fix parameters
 }
 
 void Car::doBrake()

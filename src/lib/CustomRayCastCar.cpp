@@ -43,9 +43,9 @@ CustomRayCastCar::CustomRayCastCar(int maxTireCount, const dMatrix& cordenateSyt
 	NewtonBodyGetMassMatrix(m_body0, &m_mass, &Ixx, &Iyy, &Izz);
 
 	// TODO uncomment
-//	m_gravity.m_x *= m_mass;
-//	m_gravity.m_y *= m_mass;
-//	m_gravity.m_z *= m_mass;
+	m_gravity.m_x *= m_mass;
+	m_gravity.m_y *= m_mass;
+	m_gravity.m_z *= m_mass;
 	// register the callback for tire integration
 //	NewtonUserJointSetFeedbackCollectorCallback (m_joint, IntegrateTires);
 }
@@ -173,7 +173,7 @@ void CustomRayCastCar::AddSingleSuspensionTire (
 
 	m_tires[m_tiresCount].m_springConst = springConst;
 	m_tires[m_tiresCount].m_springDamper = springDamper;
-	m_tires[m_tiresCount].m_groundFriction = 1.0f;
+	m_tires[m_tiresCount].m_groundFriction = 2.0f;
 
 	m_tires[m_tiresCount].m_tireUseConvexCastMode = castMode;
 //	m_tires[m_tiresCount].m_tireJacobianRowIndex = -1;
@@ -304,16 +304,16 @@ void CustomRayCastCar::CalculateTireCollision (Tire& tire, const dMatrix& suspen
     case 0:
 	{
 	  // normal ground friction
-	  tire.m_groundFriction = 1.0f;
+	  tire.m_groundFriction = 3.0f;
 	  break;
 	}
 	default:
 	{
 	  // default ground friction
-	  tire.m_groundFriction = 1.0f;
+	  tire.m_groundFriction = 3.0f;
 	  break;
 	}
-   }
+  }
   } else {
     tire.m_posit = tire.m_suspensionLength;
 	tire.m_groundFriction = 0.0f;

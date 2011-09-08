@@ -243,6 +243,8 @@ void GameStateController::mainLoop()
 
 
 
+
+
 void GameStateController::newGame()
 {
 	this->timer->setTime(0);
@@ -281,11 +283,9 @@ void GameStateController::newGame()
 
 	IAnimatedMesh * floor = this->smgr->getMesh("res/floor.obj");
 
-	float scale = 3.0;
+	float scale = 1.0;
 	IAnimatedMeshSceneNode * floorNode = this->smgr->addAnimatedMeshSceneNode(
-		floor,
-		0,
-		0,
+		floor, 0, 0,
 		vector3df(0,0,0),
 		vector3df(0,0,0),
 		vector3df(scale,scale,scale)
@@ -308,20 +308,40 @@ void GameStateController::newGame()
 	offset.m_posit = origin;
 	NewtonCollision* collision = NewtonCreateBox(nWorld, size.m_x, size.m_y, size.m_z, 0, &offset[0][0]);
 
-	dQuaternion q(floorNode->getRotation().X, floorNode->getRotation().Y, floorNode->getRotation().Z, 1.f);
-	dVector v(floorNode->getPosition().X, floorNode->getPosition().Y+floorPlaneWidth, floorNode->getPosition().Z);
-	dMatrix matrix(q, v);
+    this->createFloorBody(collision, floorNode, origin);
 
-	NewtonBody* floorBody = NewtonCreateBody(nWorld, collision, &matrix[0][0]);
-//	NewtonBodySetMatrix(floorBody, &matrix[0][0]);
+    IAnimatedMeshSceneNode * wall1 = this->smgr->addAnimatedMeshSceneNode(
+		floor, 0, 0,
+		vector3df(0,3,18),
+		vector3df(-20,0,0),
+		vector3df(scale,scale,scale)
+	); // TODO create normal level
 
-	NewtonBodySetUserData(floorBody, floorNode);
+    this->createFloorBody(collision, wall1, origin);
 
-	dVector inertia;
-	NewtonConvexCollisionCalculateInertialMatrix(collision, &inertia[0], &origin[0]);
+    IAnimatedMeshSceneNode * wall2 = this->smgr->addAnimatedMeshSceneNode(
+		floor, 0, 0,
+		vector3df(0,3,-18),
+		vector3df(20,0,0),
+		vector3df(scale,scale,scale)
+	); // TODO create normal level
+    this->createFloorBody(collision, wall2, origin);
 
-	NewtonBodySetMassMatrix(floorBody, 0, 0, 0, 0);
-	NewtonBodySetCentreOfMass(floorBody, &origin[0]);
+    IAnimatedMeshSceneNode * wall3 = this->smgr->addAnimatedMeshSceneNode(
+		floor, 0, 0,
+		vector3df(18,3,0),
+		vector3df(0,0,20),
+		vector3df(scale,scale,scale)
+	); // TODO create normal level
+    this->createFloorBody(collision, wall3, origin);
+
+	IAnimatedMeshSceneNode * wall4 = this->smgr->addAnimatedMeshSceneNode(
+		floor, 0, 0,
+		vector3df(-18,3,0),
+		vector3df(0,0,-20),
+		vector3df(scale,scale,scale)
+	); // TODO create normal level
+	this->createFloorBody(collision, wall4, origin);
 
 //	this->releaseCars();
 	this->car = new PlayerCar(this);
@@ -332,7 +352,15 @@ void GameStateController::newGame()
 	device->getCursorControl()->setVisible(false);
 }
 
-
+void GameStateController::createFloorBody(NewtonCollision *collision, IAnimatedMeshSceneNode *floorNode, dVector origin)
+{
+    NewtonBody *floorBody = NewtonCreateBody(nWorld, collision, floorNode->getRelativeTransformation().pointer());
+    NewtonBodySetUserData(floorBody, floorNode);
+    dVector inertia;
+    NewtonConvexCollisionCalculateInertialMatrix(collision, &inertia[0], &origin[0]);
+    NewtonBodySetMassMatrix(floorBody, 0, 0, 0, 0);
+    NewtonBodySetCentreOfMass(floorBody, &origin[0]);
+}
 
 void GameStateController::mainMenu()
 {
