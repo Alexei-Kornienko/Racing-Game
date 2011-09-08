@@ -1,5 +1,10 @@
-To compile project you need to have Irrlicht installed:
+To compile project you need to have installed:
+
+Irrlicht (1.7.2)
 http://irrlicht.sourceforge.net/
+
+Newton Game Dynamics (2.29)
+http://newtondynamics.com/forum/downloads.php
 
 Include path:
 irrlicht/include
