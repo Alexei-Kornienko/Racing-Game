@@ -3,6 +3,7 @@
 //////////////////////////////////////////////////////////////////////
 #include "CustomJointLibraryStdAfx.h"
 #include "./CustomRayCastCar.h"
+#include <stdio.h>
 
 
 //////////////////////////////////////////////////////////////////////
@@ -190,24 +191,10 @@ dMatrix CustomRayCastCar::CalculateSuspensionMatrix (int tireIndex, dFloat dista
 	dMatrix matrix;
 	// calculate the steering angle matrix for the axis of rotation
 	matrix.m_front = tire.m_localAxis;
-	matrix.m_up    = dVector (0.0f, 1.0f, 0.0f, 0.0f);
+	matrix.m_up    = m_localFrame.m_up;
 	matrix.m_right = dVector (-tire.m_localAxis.m_z, 0.0f, tire.m_localAxis.m_x, 0.0f);
 	matrix.m_posit = tire.m_harpoint - m_localFrame.m_up.Scale (distance);
 	return matrix;
-}
-
-dMatrix CustomRayCastCar::CalculateTireMatrix (int tireIndex) const
-{
-	const Tire& tire = m_tires[tireIndex];
-
-	// calculate the rotation angle matrix
-	dMatrix angleMatrix (dPitchMatrix(tire.m_spinAngle));
-
-	// get the tire body matrix
-	dMatrix bodyMatrix;
-	NewtonBodyGetMatrix(m_body0, &bodyMatrix[0][0]);
-	return angleMatrix * CalculateSuspensionMatrix (tireIndex, tire.m_posit) * m_localFrame * bodyMatrix;
-
 }
 
 unsigned CustomRayCastCar::ConvexCastPrefilter(const NewtonBody* body, const NewtonCollision* collision, void* userData)
@@ -265,7 +252,6 @@ void CustomRayCastCar::CalculateTireCollision(Tire& tire,
 				+ (destination - suspensionMatrixInGlobalSpace.m_posit).Scale(
 						info.m_param);
 		tire.m_contactNormal = info.m_normal;
-// TO DO: get the material properties for tire frictions on different roads
 
 		intesectionDist = dist * info.m_param - tire.m_radius;
 		if (intesectionDist > tire.m_suspensionLength) {
@@ -275,14 +261,10 @@ void CustomRayCastCar::CalculateTireCollision(Tire& tire,
 		}
 		tire.m_posit = intesectionDist;
 		switch (info.m_contactID) {
-		case 0: {
-// normal ground friction
-			tire.m_groundFriction = 3.0f;
-			break;
-		}
+		// TODO: get the material properties for tire frictions on different roads
 		default: {
 // default ground friction
-			tire.m_groundFriction = 3.0f;
+			tire.m_groundFriction = 0.2f;
 			break;
 		}
 		}
@@ -294,12 +276,7 @@ void CustomRayCastCar::CalculateTireCollision(Tire& tire,
 
 void CustomRayCastCar::SubmitConstraints(dFloat timestep, int threadIndex)
 {
-	dFloat invTimestep;
 	dMatrix bodyMatrix;
-	dMatrix suspensionMatrices[VEHICLE_MAX_TIRE_COUNT];
-
-	// get the simulation time
-	invTimestep = 1.0f / timestep ;
 
 	// get the vehicle global matrix, and use it in several calculations
 	NewtonBodyGetMatrix(m_body0, &bodyMatrix[0][0]);
@@ -308,23 +285,15 @@ void CustomRayCastCar::SubmitConstraints(dFloat timestep, int threadIndex)
 	// calculate all suspension matrices in global space and tire collision
 	for (int i = 0; i < m_tiresCount; i ++) {
 		Tire& tire = m_tires[i];
-		dMatrix suspensionMatrix = suspensionMatrices[i];
 
 		// calculate this suspension matrix and save it for future used
-		suspensionMatrix = CalculateSuspensionMatrix (i, 0.0f) * chassisMatrix;
+		dMatrix suspensionMatrix = CalculateSuspensionMatrix (i, 0.0f) * chassisMatrix;
 
 		// calculate the tire collision
 		CalculateTireCollision (tire, suspensionMatrix);
 	}
 
-
-	// calculate all suspension forces due to spring and damper
-	dVector m_chassisForce (0.0f, 0.0f, 0.0f, 0.0f);
-	dVector m_chassisTorque (0.0f, 0.0f, 0.0f, 0.0f);
-
 	// get the chassis instantaneous linear and angular velocity in the local space of the chassis
-	int longitidunalForceIndex;
-	longitidunalForceIndex = 0;
 	NewtonBodyGetVelocity(m_body0, &m_chassisVelocity[0]);
 	NewtonBodyGetOmega(m_body0, &m_chassisOmega[0]);
 	for (int i = 0; i < m_tiresCount; i ++) {
@@ -340,15 +309,9 @@ void CustomRayCastCar::SubmitConstraints(dFloat timestep, int threadIndex)
 	    tire.m_longitudinalDir = longitudinalPin;
 	    tire.m_lateralDir = lateralPin;
 		if (tire.m_posit < tire.m_suspensionLength)  {
-			dFloat speed;
-            // TO DO: need to calculate the velocity if the other body at the point
-
-			// for now assume the ground is a static body
-			dVector hitBodyVeloc (0, 0, 0, 0);
-
 			// calculate the relative velocity
-			dVector relVeloc (tire.m_tireAxelVeloc - hitBodyVeloc);
-			speed = -(relVeloc % chassisMatrix.m_up);
+			dVector relVeloc  = tire.m_tireAxelVeloc;
+			dFloat speed = -(relVeloc % chassisMatrix.m_up);
 
 			// now calculate the tire load at the contact point
 			tire.m_tireLoad = - NewtonCalculateSpringDamperAcceleration (timestep, tire.m_springConst, tire.m_suspensionLength - tire.m_posit, tire.m_springDamper, speed)*0.5f;
@@ -359,28 +322,23 @@ void CustomRayCastCar::SubmitConstraints(dFloat timestep, int threadIndex)
 			} else {
 				//this suspension is applying a normalize force to the car chassis, need to scales by the mass of the car
 				tire.m_tireLoad *= m_mass;
-
-				// apply the tire model to these wheel
 			}
 
 			// convert the tire load force magnitude to a torque and force.
 			dVector tireForce (chassisMatrix.m_up.Scale (tire.m_tireLoad));
 
 			// accumulate the force and torque form this suspension
-			m_chassisForce = tireForce;
-
-            m_chassisForce += chassisMatrix.m_front.Scale(tire.m_torque*-40);
+			tireForce += chassisMatrix.m_front.Scale(tire.m_torque*-40);
 			if (dAbs(m_curSpeed)!=0.0f) {
-              m_chassisForce += chassisMatrix.m_right.Scale(tire.m_turnforce*60);
+				tireForce += chassisMatrix.m_right.Scale(tire.m_turnforce*60);
 			}
 			if (tire.m_groundFriction!=0) {
-			  ApplyTractionAndSteer(m_chassisForce,tire.m_tireAxelPosit);
+			  ApplyTractionAndSteer(tireForce,tire.m_tireAxelPosit);
 			  ApplyTireFrictionModel(chassisMatrix, timestep);
 			}
 		} else {
-			//tire is on the air  not force applied to the vehicle.
+			//tire is on the air, force is not applied to the vehicle.
 			tire.m_tireLoad = dFloat (0.0f);
-//			tire.m_tireJacobianRowIndex = -1;
 			dFloat torque;
 			torque = tire.m_torque - tire.m_angularVelocity * tire.m_Ixx * 0.1f;
 			tire.m_angularVelocity  += torque * tire.m_IxxInv * timestep;
@@ -414,11 +372,16 @@ void CustomRayCastCar::ApplyTiresTorqueVisual(Tire& tire, dFloat timestep, int t
 	  // W is the tire local angular velocity
 	  // R is the tire radius
 	  // dir is the longitudinal direction of of the tire.
-	  dFloat tireLinearSpeed;
-	  dFloat tireContactSpeed;
-	  tireLinearSpeed = tire.m_tireAxelVeloc % tire.m_longitudinalDir;
-	  tireContactSpeed = (tire.m_lateralDir * tireRadius) % tire.m_longitudinalDir;
-	  tire.m_angularVelocity = - tireLinearSpeed / tireContactSpeed;
+//	  dFloat tireLinearSpeed;
+//	  dFloat tireContactSpeed;
+//	  tireLinearSpeed = tire.m_tireAxelVeloc % tire.m_longitudinalDir;
+//	  tireContactSpeed = (tire.m_lateralDir * tireRadius) % tire.m_longitudinalDir;
+//	  tire.m_angularVelocity = - tireLinearSpeed / tireContactSpeed;
+		tire.m_angularVelocity = M_PI;
+//		if ( tire.m_angularVelocity > 0) {
+//			printf("Speed %f\n", tire.m_angularVelocity);
+//		}
+
 	} else {
 	  // tire is under some power, need to do the free body integration to apply the net torque
 	  dFloat tireLinearSpeed;
@@ -467,7 +430,7 @@ void CustomRayCastCar::ApplyVelocityCorrection(const dMatrix& chassisMatrix)
   dFloat speed;
   // add some lose friction.
   // can surely need a fix to make lose friction when the vehicle turn from steer.
-  // this is only a quick hack in waitting a better solution.
+  // this is only a quick hack in waiting a better solution.
   speed = dAbs (GetSpeed())*0.03f;
   if (speed>0.295f) {
     speed = 0.295f;

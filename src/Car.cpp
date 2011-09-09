@@ -178,7 +178,7 @@ void Car::SetTorque(float torque)
 	this->SetTireTorque(0, torque);
 	this->SetTireTorque(1, torque);
 //	this->SetTireTorque(2, torque);
-//	this->SetTireTorque(3, torque);
+//	this->SetTireTorque(3, torque);уна
 }
 
 void Car::SetSteering(float direction)
@@ -224,7 +224,8 @@ dFloat Car::generateTiresSteerAngle (dFloat value)
 dFloat Car::generateTiresSteerForce (dFloat value)
 {
 //	m_maxBrakeForce = 2.0f * m_mass * 10.0f; // TODO place in the right place
-	dFloat maxSteerForce = 6000.0f;
+//	dFloat maxSteerForce = 6000.0f;
+	dFloat maxSteerForce = 1000.0f;
 	dFloat maxSteerForceRate = 0.03f;
 	dFloat maxSteerSpeedRestriction = 2.0f;
 	dFloat engineSteerDiv = 100.0f;
