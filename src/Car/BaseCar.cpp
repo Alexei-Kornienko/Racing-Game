@@ -32,11 +32,20 @@ BaseCar::~BaseCar()
 
 void BaseCar::update(const float timeSpan)
 {
+	dMatrix globalPos;
+	NewtonBodyGetMatrix(this->carBody, &globalPos[0][0]);
 
-//
+	TireRayCast * tireCast = new TireRayCast(this, globalPos, this->getTire(0), this->tires[0].suspensionLenght);
+	tireCast->castRay();
+	if(tireCast->hasContact()) {
+		this->getTire(0)->setSuspension(this->tires[0].suspensionLenght * tireCast->getHitDistance());
+//		NewtonCalculateSpringDamperAcceleration();
+	} else {
+		this->getTire(0)->setSuspension(this->tires[0].suspensionLenght);
+	}
+	delete tireCast;
 
-
-//	NewtonBodyAddForce(this->carBody, &this->gravity[0]);
+	NewtonBodyAddForce(this->carBody, &this->gravity[0]);
 }
 
 
@@ -65,6 +74,7 @@ Tire *BaseCar::getTire(const int index) const
 void BaseCar::addSuspensionTire(Tire *t, const float suspensionLenght, const float suspensionSpring, const float suspensionDamper)
 {
 	if(this->tiresC < this->tiresCount) {
+		t->setLocalCoordinates(this->getLocalCoordinates());
 		this->tires[this->tiresC].t = t;
 		this->tires[this->tiresC].suspensionLenght = suspensionLenght;
 		this->tires[this->tiresC].suspensionSpring = suspensionSpring;
@@ -80,11 +90,6 @@ NewtonBody *BaseCar::getCarBody() const
 
 void BaseCar::setTirePosTest()
 {
-	dMatrix globalPos;
-	NewtonBodyGetMatrix(this->carBody, &globalPos[0][0]);
-
-	TireRayCast * tireCast = new TireRayCast(this, globalPos, this->getTire(0), this->tires[0].suspensionLenght);
-	tireCast->castRay();
 
 }
 
@@ -95,6 +100,7 @@ void BaseCar::setCarBodyAndGravity(NewtonBody *carBody, const dVector &gravity)
     dFloat Iyy;
     dFloat Izz;
     NewtonBodyGetMassMatrix(this->carBody, &this->mass, &Ixx, &Iyy, &Izz);
+    this->mass = 5;
     this->gravity = dVector(
     	gravity.m_x * this->mass,
     	gravity.m_y * this->mass,

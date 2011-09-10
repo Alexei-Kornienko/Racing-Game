@@ -53,12 +53,12 @@ void Car::initModels(ISceneManager * smgr) {
 		-1,
 		vector3df(1,2,5)
 	);
-	this->carNode->setRotation(vector3df(0,45,0));
+	this->carNode->setRotation(vector3df(0,45,45));
 
 	this->wheelMesh = smgr->getMesh("res/wheel.obj");
 
 	float wheelPosY = -0.2235f;
-//	float wheelPosY = -0.4f;
+//	float wheelPosY = -0.3f;
 
 	this->wheels[0] = smgr->addAnimatedMeshSceneNode(
 		this->wheelMesh,

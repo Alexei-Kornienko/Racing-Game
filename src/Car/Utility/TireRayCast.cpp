@@ -22,10 +22,13 @@ TireRayCast::~TireRayCast()
 
 void TireRayCast::castRay()
 {
-	dVector tirePosGlobal = this->globalSpace.TransformVector(this->tire->getLocalPos());
-	dVector tireRayDirection = tirePosGlobal + this->car->getLocalCoordinates().m_up.Scale(
-		-(this->suspensionLenght + this->tire->getRaduis())
+	dVector tirePosGlobal = this->globalSpace.TransformVector(this->tire->getHarpoint());
+	dVector suspensionVector =  this->car->getLocalCoordinates().m_up.Scale(
+		(this->suspensionLenght + this->tire->getRaduis())
 	);
+	suspensionVector = this->globalSpace.RotateVector(suspensionVector);
+	dVector tireRayDirection = tirePosGlobal - suspensionVector;
+	tirePosGlobal += suspensionVector;
 	NewtonWorldRayCast(
 		this->car->getWorld(),
 		&tirePosGlobal[0],
@@ -59,7 +62,7 @@ bool TireRayCast::hasContact()
 
 dFloat TireRayCast::getHitDistance() const
 {
-    return hitDistance;
+    return (hitDistance*2 - 1);
 }
 
 dVector TireRayCast::getHitNormal() const

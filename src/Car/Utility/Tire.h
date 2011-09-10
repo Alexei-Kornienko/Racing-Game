@@ -13,7 +13,12 @@
 class Tire {
 public:
 	Tire(
-		dVector localPos, float tireMass, float tireRaduis, float tireWidth, void *userData);
+		dVector localPos,
+		float tireMass,
+		float tireRaduis,
+		float tireWidth,
+		void *userData
+	);
     ~Tire();
     void setTorque(const float torque);
     void setBrake(const float torque);
@@ -26,9 +31,14 @@ public:
     float getWidth() const;
     dVector getLocalPos() const;
     void setLocalPos(dVector localPos);
+    dVector getHarpoint() const;
+    void setSuspension(const float value);
+    dMatrix getLocalCoordinates() const;
+    void setLocalCoordinates(dMatrix localCoordinates);
 protected:
 private:
-    dVector localPos;
+    dMatrix localCoordinates; // local coordinate system of the tire
+    dVector localPos; // local position of the tire (with suspension)
     float turnAngle;
     float mass;
     float raduis;
@@ -36,6 +46,7 @@ private:
     float torque;
     float brakeTorque;
     void *userData;
+
     float generateTiresSteerAngle(const float value) const;
 
 };

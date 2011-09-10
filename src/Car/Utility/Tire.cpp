@@ -20,24 +20,17 @@ Tire::~Tire() {
 
 }
 
-void Tire::setTorque(const dFloat torque)
+
+
+void Tire::setLocalCoordinates(dMatrix localCoordinates)
 {
-	this->torque = torque;
+    this->localCoordinates = localCoordinates;
+    this->localCoordinates.m_posit = this->localPos;
 }
 
-void Tire::setBrake(const dFloat torque)
+void Tire::setSuspension(const float value)
 {
-	this->brakeTorque = -torque;
-}
-
-void Tire::setSteerDirection(const dFloat direction)
-{
-	this->turnAngle = this->generateTiresSteerAngle(direction);
-}
-
-void Tire::setLocalPos(dVector localPos)
-{
-    this->localPos = localPos;
+	this->localPos = this->getHarpoint() - this->getLocalCoordinates().m_up.Scale(value);
 }
 
 dFloat Tire::generateTiresSteerAngle (dFloat value) const
@@ -70,6 +63,36 @@ dFloat Tire::generateTiresSteerAngle (dFloat value) const
 	}
 
 	return steerAngle;
+}
+
+void Tire::setTorque(const dFloat torque)
+{
+	this->torque = torque;
+}
+
+void Tire::setBrake(const dFloat torque)
+{
+	this->brakeTorque = -torque;
+}
+
+void Tire::setSteerDirection(const dFloat direction)
+{
+	this->turnAngle = this->generateTiresSteerAngle(direction);
+}
+
+void Tire::setLocalPos(dVector localPos)
+{
+    this->localPos = localPos;
+}
+
+dVector Tire::getHarpoint() const
+{
+    return this->getLocalCoordinates().m_posit;
+}
+
+dMatrix Tire::getLocalCoordinates() const
+{
+    return localCoordinates;
 }
 
 dVector Tire::getLocalPos() const
