@@ -8,8 +8,6 @@
 #include "BaseCar.h"
 
 
-
-
 BaseCar::BaseCar(int tiresCount, NewtonWorld * world)
 {
 	this->tiresCount = tiresCount;
@@ -85,13 +83,9 @@ void BaseCar::setTirePosTest()
 	dMatrix globalPos;
 	NewtonBodyGetMatrix(this->carBody, &globalPos[0][0]);
 
-//	globalPos = globalPos * this->localCoordinates;
+	TireRayCast * tireCast = new TireRayCast(this, globalPos, this->getTire(0), this->tires[0].suspensionLenght);
+	tireCast->castRay();
 
-	dVector tirePosGlobal = globalPos.TransformVector(this->getTire(0)->getLocalPos());
-	dVector tireRayDirection = tirePosGlobal + this->localCoordinates.m_up.Scale(
-		-(this->tires[0].suspensionLenght + this->tires[0].t->getRaduis())
-	);
-//	NewtonWorldRayCast(this->world, &tirePosGlobal[0], &tireRayDirection[0]);
 }
 
 void BaseCar::setCarBodyAndGravity(NewtonBody *carBody, const dVector &gravity)
@@ -119,6 +113,13 @@ void BaseCar::setLocalCoordinates(dMatrix localCoordinates)
 {
     this->localCoordinates = localCoordinates;
 }
+
+NewtonWorld *BaseCar::getWorld() const
+{
+    return world;
+}
+
+
 
 
 

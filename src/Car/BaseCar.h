@@ -10,6 +10,9 @@
 
 #include "racingGame.h"
 #include "Utility/Tire.h"
+#include "Utility/TireRayCast.h"
+
+class TireRayCast;
 
 class BaseCar {
 public:
@@ -25,8 +28,9 @@ public:
     NewtonBody *getCarBody() const;
     dMatrix getLocalCoordinates() const;
     void setLocalCoordinates(dMatrix localCoordinates);
+    NewtonWorld *getWorld() const;
 protected:
-    void setCarBodyAndGravity(NewtonBody *carBody, const dVector &gravity);
+    void setCarBodyAndGravity(NewtonBody *carBody, const dVector & gravity);
 private:
     dVector speed;
     int tiresCount;
@@ -36,14 +40,12 @@ private:
         float suspensionLenght;
         float suspensionSpring;
         float suspensionDamper;
-	};
-
-	int tiresC;
-	SuspensionTire * tires;
-
-	NewtonWorld * world;
-	NewtonBody * carBody;
-	dFloat mass;
+    };
+    int tiresC;
+    SuspensionTire *tires;
+    NewtonWorld *world;
+    NewtonBody *carBody;
+    float mass;
 	dVector gravity;
 
 	dMatrix localCoordinates;
