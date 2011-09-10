@@ -35,15 +35,30 @@ void BaseCar::update(const float timeSpan)
 	dMatrix globalPos;
 	NewtonBodyGetMatrix(this->carBody, &globalPos[0][0]);
 
-	TireRayCast * tireCast = new TireRayCast(this, globalPos, this->getTire(0), this->tires[0].suspensionLenght);
-	tireCast->castRay();
-	if(tireCast->hasContact()) {
-		this->getTire(0)->setSuspension(this->tires[0].suspensionLenght * tireCast->getHitDistance());
-//		NewtonCalculateSpringDamperAcceleration();
-	} else {
-		this->getTire(0)->setSuspension(this->tires[0].suspensionLenght);
+
+	// get the chassis instantaneous linear and angular velocity in the local space of the chassis
+	NewtonBodyGetVelocity(this->carBody, &this->speed[0]);
+	NewtonBodyGetOmega(this->carBody, &this->angularSpeed[0]);
+	for(int i=0, c=this->getTiresCount(); i < c; i++) {
+		SuspensionTire sTire = this->tires[i];
+		TireRayCast * tireCast = new TireRayCast(this, globalPos, sTire.t, sTire.suspensionLenght);
+		tireCast->castRay();
+		if(tireCast->hasContact()) {
+			dFloat suspensionPosition = sTire.suspensionLenght * tireCast->getHitDistance();
+			sTire.t->setSuspension(suspensionPosition);
+			dVector tireSpeed = this->speed + this->angularSpeed * sTire.t->getLocalPos();
+			dFloat tireSuspensionSpeed = tireSpeed % this->localCoordinates.m_up;
+			dFloat suspensionCompression = (1 - tireCast->getHitDistance()) / 2;
+
+			dFloat tireLoad = NewtonCalculateSpringDamperAcceleration (timeSpan, sTire.suspensionSpring, -suspensionCompression, sTire.suspensionDamper, tireSuspensionSpeed);
+			tireLoad *= this->mass / this->getTiresCount();
+			dVector tireForce = globalPos.m_up.Scale(tireLoad);
+			NewtonBodyAddForce(this->carBody, &tireForce[0]);
+		} else {
+			sTire.t->setSuspension(sTire.suspensionLenght);
+		}
+		delete tireCast;
 	}
-	delete tireCast;
 
 	NewtonBodyAddForce(this->carBody, &this->gravity[0]);
 }

@@ -33,6 +33,7 @@ protected:
     void setCarBodyAndGravity(NewtonBody *carBody, const dVector & gravity);
 private:
     dVector speed;
+    dVector angularSpeed;
     int tiresCount;
     struct SuspensionTire
     {

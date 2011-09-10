@@ -51,14 +51,14 @@ void Car::initModels(ISceneManager * smgr) {
 		this->carMeshClean,
 		0,
 		-1,
-		vector3df(1,2,5)
+		vector3df(0,1,0)
 	);
-	this->carNode->setRotation(vector3df(0,45,45));
+//	this->carNode->setRotation(vector3df(0,0,180));
 
 	this->wheelMesh = smgr->getMesh("res/wheel.obj");
 
-	float wheelPosY = -0.2235f;
-//	float wheelPosY = -0.3f;
+//	float wheelPosY = -0.2235f;
+	float wheelPosY = -0.4f;
 
 	this->wheels[0] = smgr->addAnimatedMeshSceneNode(
 		this->wheelMesh,
@@ -132,8 +132,9 @@ void Car::initVenichlePhysics(NewtonWorld *nWorld)
 	float wheelRaduis = 0.147f;
 	float wheelWidth = 0.104f;
 	float suspensionLenght = wheelRaduis;
-	float suspensionSpring = 175.0f;
-	float suspensionDamper = 6.0f;
+//	float suspensionSpring = 20.0f;
+	float suspensionSpring = 30.0f;
+	float suspensionDamper = 5.0f;
 
 	for(int i=0; i<WHEELS_COUNT; i++) {
 		Tire * t = new Tire(
