@@ -8,7 +8,7 @@
 #ifndef CONTROLLER_H_
 #define CONTROLLER_H_
 
-#define AI_COUNT 4
+#define AI_COUNT 0
 
 #define	MENU_NEW_GAME 1
 #define	MENU_OPTIONS 2

@@ -35,6 +35,11 @@ void Tire::setSteerDirection(const dFloat direction)
 	this->turnAngle = this->generateTiresSteerAngle(direction);
 }
 
+void Tire::setLocalPos(dVector localPos)
+{
+    this->localPos = localPos;
+}
+
 dFloat Tire::generateTiresSteerAngle (dFloat value) const
 {
 	dFloat steerAngle = this->turnAngle;

@@ -29,7 +29,7 @@ void applyCarTransform (const NewtonBody* body, const dFloat* matrix, int thread
 
 
 
-Car::Car(GameStateController * controller) : BaseCar(WHEELS_COUNT)
+Car::Car(GameStateController * controller) : BaseCar(WHEELS_COUNT, controller->getWorld())
 {
 	this->controller = controller;
 	this->initModels(this->controller->getSmgr());
@@ -51,9 +51,9 @@ void Car::initModels(ISceneManager * smgr) {
 		this->carMeshClean,
 		0,
 		-1,
-		vector3df(0,2,0)
+		vector3df(1,2,5)
 	);
-//	this->carNode->setRotation(vector3df(0,30,0));
+	this->carNode->setRotation(vector3df(0,45,0));
 
 	this->wheelMesh = smgr->getMesh("res/wheel.obj");
 
@@ -121,7 +121,8 @@ void Car::initPhysics() {
 	NewtonBodySetForceAndTorqueCallback(body, applyCarMoveForce);
 	NewtonBodySetTransformCallback(body, applyCarTransform);
 
-	this->setCarBody(body);
+	this->setCarBodyAndGravity(body, dVector(0,-10,0,0));
+	this->setLocalCoordinates(this->createChassisMatrix());
 }
 
 
@@ -130,7 +131,7 @@ void Car::initVenichlePhysics(NewtonWorld *nWorld)
 	float wheelMass = 30.0f;
 	float wheelRaduis = 0.147f;
 	float wheelWidth = 0.104f;
-	float suspensionLenght = 0.1;
+	float suspensionLenght = wheelRaduis;
 	float suspensionSpring = 175.0f;
 	float suspensionDamper = 6.0f;
 
@@ -149,6 +150,7 @@ void Car::initVenichlePhysics(NewtonWorld *nWorld)
 			suspensionDamper
 		);
 	}
+	this->setTirePosTest();
 }
 
 vector3df Car::getSpeed() const
@@ -159,6 +161,11 @@ vector3df Car::getSpeed() const
 
 void Car::updateWheelsPos()
 {
+	for(int i=0, c=this->getTiresCount(); i<c; i++) {
+		dVector tPos = this->getTire(i)->getLocalPos();
+		vector3df pos(tPos.m_x, tPos.m_y, tPos.m_z);
+		this->wheels[i]->setPosition(pos);
+	}
 }
 
 void Car::update(dFloat timeSpan)
@@ -226,7 +233,7 @@ vector3df Car::getDirection() const
 
 float Car::getWheelsTurn() const
 {
-	return this->wheelFL->getRotation().Y;
+	return this->wheels[0]->getRotation().Y;
 }
 
 dMatrix Car::createChassisMatrix()
@@ -236,7 +243,7 @@ dMatrix Car::createChassisMatrix()
     chassisMatrix.m_front	= dVector(0.0f, 0.0f, 1.0f, 0.0);
     chassisMatrix.m_up		= dVector(0.0f, 1.0f, 0.0f, 0.0f);
     chassisMatrix.m_right	= chassisMatrix.m_up * chassisMatrix.m_front;
-    chassisMatrix.m_posit	= dVector(0.0f, 0.0f, 0.0f, 1.0f);
+    NewtonBodyGetCentreOfMass(this->getCarBody(), &chassisMatrix.m_posit[0]);
     return chassisMatrix;
 }
 

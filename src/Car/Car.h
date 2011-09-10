@@ -37,10 +37,7 @@ protected:
     GameStateController *controller;
     IAnimatedMeshSceneNode *carNode;
     IAnimatedMeshSceneNode *wheels[WHEELS_COUNT];
-    IAnimatedMeshSceneNode *wheelFL;
-    IAnimatedMeshSceneNode *wheelFR;
-    IAnimatedMeshSceneNode *wheelBL;
-    IAnimatedMeshSceneNode *wheelBR;
+
     void doAccelerate();
     void doReverse();
     void doBrake();
