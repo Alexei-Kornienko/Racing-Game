@@ -18,7 +18,7 @@
 #define PMENU_MAIN 5
 
 #include "racingGame.h"
-#include "Car.h"
+#include "Car/Car.h"
 
 class Car;
 class GameStateController : public IEventReceiver {

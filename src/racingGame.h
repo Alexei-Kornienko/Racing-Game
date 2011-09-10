@@ -14,6 +14,7 @@
 
 #include "irrlicht.h"
 #include "Newton.h"
+#include "dMathDefines.h"
 #include "dVector.h"
 #include "dMatrix.h"
 #include "dQuaternion.h"

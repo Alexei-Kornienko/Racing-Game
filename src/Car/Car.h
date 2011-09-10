@@ -10,32 +10,33 @@
 
 #include "racingGame.h"
 #include "GameStateController.h"
-#include "lib/CustomRayCastCar.h"
+
+#include "BaseCar.h"
+
+#define WHEELS_COUNT 4
 
 class GameStateController;
 
 void applyCarMoveForce(const NewtonBody* body, dFloat timestep, int threadIndex);
 void applyCarTransform (const NewtonBody* body, const dFloat* matrix, int threadIndex);
 
-class Car : public CustomRayCastCar {
+class Car : private BaseCar {
 friend void applyCarMoveForce(const NewtonBody* body, float timestep, int threadIndex);
-    friend void applyCarTransform(const NewtonBody *body, const float *matrix, int threadIndex);
+friend void applyCarTransform(const NewtonBody *body, const float *matrix, int threadIndex);
 public:
     Car(GameStateController *controller);
     virtual ~Car();
-    virtual void update(float timeSpan, int index);
+    virtual void update(float timeSpan);
     int getHelthPoints() const;
     vector3df getPosition() const;
     vector3df getDirection() const;
-    float getWheelsTurn() const;
-    void setPosition(const vector3df pos);
-    virtual void SetBrake(float torque);
-    virtual void SetTorque(float torque);
-    virtual void SetSteering(float angle);
+	void setPosition(const vector3df pos);
+	float getWheelsTurn() const;
+	vector3df getSpeed() const;
 protected:
     GameStateController *controller;
     IAnimatedMeshSceneNode *carNode;
-    IAnimatedMeshSceneNode *wheels[4];
+    IAnimatedMeshSceneNode *wheels[WHEELS_COUNT];
     IAnimatedMeshSceneNode *wheelFL;
     IAnimatedMeshSceneNode *wheelFR;
     IAnimatedMeshSceneNode *wheelBL;
@@ -45,21 +46,20 @@ protected:
     void doBrake();
     void doTurnLeft();
     void doTurnRight();
+
 private:
     void init();
-    IAnimatedMeshSceneNode *initModels(ISceneManager*);
-    NewtonBody *initPhysics(GameStateController *controller);
+    void initModels(ISceneManager*);
+    void initPhysics();
     void initVenichlePhysics(NewtonWorld*);
-    dMatrix createChassisMatrix();
-    float generateTiresSteerAngle(float value);
-    dFloat generateTiresSteerForce (dFloat value);
+
+	dMatrix createChassisMatrix();
+
     void updateWheelsPos();
 
 
 
 	int helthPoints;
-
-	NewtonBody* body;
 
 	IAnimatedMesh * carMeshClean;
 	IAnimatedMesh * carMeshDamaged;
