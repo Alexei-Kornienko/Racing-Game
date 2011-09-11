@@ -53,7 +53,12 @@ void BaseCar::update(const float timeSpan)
 			dFloat tireLoad = NewtonCalculateSpringDamperAcceleration (timeSpan, sTire.suspensionSpring, -suspensionCompression, sTire.suspensionDamper, tireSuspensionSpeed);
 			tireLoad *= this->mass / this->getTiresCount();
 			dVector tireForce = globalPos.m_up.Scale(tireLoad);
-			NewtonBodyAddForce(this->carBody, &tireForce[0]);
+			dVector com;
+			NewtonBodyGetCentreOfMass(this->carBody, &com[0]);
+
+			dVector tForce =  tireForce * (com - sTire.t->getLocalPos());
+			NewtonBodyAddTorque(this->carBody, &tForce[0]);
+//			NewtonBodyAddForce(this->carBody, &tireForce[0]);
 		} else {
 			sTire.t->setSuspension(sTire.suspensionLenght);
 		}
@@ -115,7 +120,7 @@ void BaseCar::setCarBodyAndGravity(NewtonBody *carBody, const dVector &gravity)
     dFloat Iyy;
     dFloat Izz;
     NewtonBodyGetMassMatrix(this->carBody, &this->mass, &Ixx, &Iyy, &Izz);
-    this->mass = 5;
+//    this->mass = 5;
     this->gravity = dVector(
     	gravity.m_x * this->mass,
     	gravity.m_y * this->mass,

@@ -23,12 +23,15 @@ TireRayCast::~TireRayCast()
 void TireRayCast::castRay()
 {
 	dVector tirePosGlobal = this->globalSpace.TransformVector(this->tire->getHarpoint());
-	dVector suspensionVector =  this->car->getLocalCoordinates().m_up.Scale(
+	dVector sVectorDown =  this->car->getLocalCoordinates().m_up.Scale(
 		(this->suspensionLenght + this->tire->getRaduis())
 	);
-	suspensionVector = this->globalSpace.RotateVector(suspensionVector);
-	dVector tireRayDirection = tirePosGlobal - suspensionVector;
-	tirePosGlobal += suspensionVector;
+	dVector sVectorUp =  this->car->getLocalCoordinates().m_up.Scale(
+		(this->suspensionLenght - this->tire->getRaduis())
+	);
+	sVectorDown = this->globalSpace.RotateVector(sVectorDown);
+	dVector tireRayDirection = tirePosGlobal - sVectorDown;
+	tirePosGlobal += sVectorUp;
 	NewtonWorldRayCast(
 		this->car->getWorld(),
 		&tirePosGlobal[0],
