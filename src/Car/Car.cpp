@@ -51,9 +51,9 @@ void Car::initModels(ISceneManager * smgr) {
 		this->carMeshClean,
 		0,
 		-1,
-		vector3df(5,3,5)
+		vector3df(0,1,0)
 	);
-	this->carNode->setRotation(vector3df(-20,20,0));
+	this->carNode->setRotation(vector3df(0,180,0));
 
 	this->wheelMesh = smgr->getMesh("res/wheel.obj");
 
@@ -132,9 +132,9 @@ void Car::initVenichlePhysics(NewtonWorld *nWorld)
 	float wheelRaduis = 0.147f;
 	float wheelWidth = 0.104f;
 	float suspensionLenght = wheelRaduis;
+//	float suspensionSpring = 20.0f;
 	float suspensionSpring = 20.0f;
-//	float suspensionSpring = 150.0f;
-	float suspensionDamper = 5.0f;
+	float suspensionDamper = 10.0f;
 
 	for(int i=0; i<WHEELS_COUNT; i++) {
 		Tire * t = new Tire(
