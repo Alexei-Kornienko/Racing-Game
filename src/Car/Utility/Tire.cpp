@@ -15,6 +15,8 @@ Tire::Tire(dVector localPos, dFloat tireMass, dFloat tireRaduis, dFloat tireWidt
 	this->raduis = tireRaduis;
 	this->width = tireWidth;
 	this->userData = userData;
+	this->turnAngle = 0;
+	this->spinAngle = 0;
 }
 
 Tire::~Tire() {

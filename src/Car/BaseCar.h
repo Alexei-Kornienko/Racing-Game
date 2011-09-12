@@ -19,12 +19,12 @@ public:
 	BaseCar(int tiresCount, NewtonWorld * world);
 	virtual ~BaseCar();
 
-	virtual void update(const dFloat timeSpan);
-	void setTirePosTest();
+	virtual void update(const float timeSpan);
+    void setTirePosTest();
     dVector getSpeed() const;
     int getTiresCount() const;
     Tire *getTire(const int index) const;
-    void addSuspensionTire(Tire *t, const dFloat suspensionLenght, const dFloat suspensionSpring, const dFloat suspensionDamper);
+    void addSuspensionTire(Tire *t, const float suspensionLenght, const float suspensionSpring, const float suspensionDamper);
     NewtonBody *getCarBody() const;
     dMatrix getLocalCoordinates() const;
     void setLocalCoordinates(dMatrix localCoordinates);
@@ -36,24 +36,24 @@ private:
     dVector angularSpeed;
     dVector massCenter;
     int tiresCount;
+    int tiresC;
+    float distanceBetweenFrontAndRearTire;
     struct SuspensionTire
     {
         Tire *t;
-        dFloat suspensionLenght;
-        dFloat suspensionSpring;
-        dFloat suspensionDamper;
+        float suspensionLenght;
+        float suspensionSpring;
+        float suspensionDamper;
         dVector tireSpeed;
-    };
-    int tiresC;
-    SuspensionTire *tires;
+    } *tires;
     NewtonWorld *world;
     NewtonBody *carBody;
-    dFloat mass;
-	dVector gravity;
-
-	dMatrix localCoordinates;
-    void applyTireFriction(SuspensionTire & sTire);
-    dFloat getTireMassLoad();
+    float mass;
+    dVector gravity;
+    dMatrix localCoordinates;
+    void applyOmegaFriction();
+    dVector applyTireFriction(SuspensionTire & sTire);
+    float getTireMassLoad();
 };
 
 #endif /* BASECAR_H_ */

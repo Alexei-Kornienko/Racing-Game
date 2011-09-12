@@ -35,22 +35,42 @@ float BaseCar::getTireMassLoad()
     return this->mass / this->getTiresCount();
 }
 
-void BaseCar::applyTireFriction(SuspensionTire & sTire)
+dVector BaseCar::applyTireFriction(SuspensionTire & sTire)
 {
     dMatrix localCoord = sTire.t->getLocalCoordinates();
     dFloat frontSpeed = sTire.tireSpeed % localCoord.m_front;
+    dVector friction(0,0,0,0);
     if(dAbs(frontSpeed) > 0.1) {
-    	sTire.tireSpeed -= localCoord.m_front.Scale(frontSpeed * 0.2);
+    	friction += localCoord.m_front.Scale(frontSpeed * 0.2);
 	} else if(dAbs(frontSpeed) > 0) {
-		sTire.tireSpeed -= localCoord.m_front.Scale(frontSpeed * 0.9);
+		friction += localCoord.m_front.Scale(frontSpeed * 0.9);
 	}
     dFloat sideSpeed = this->speed % localCoord.m_right;
     if(dAbs(sideSpeed) > 0.1) {
-    	sTire.tireSpeed -= localCoord.m_right.Scale(sideSpeed * 0.5);
+    	friction += localCoord.m_right.Scale(sideSpeed * 0.5);
 	} else if(dAbs(sideSpeed) > 0) {
-		sTire.tireSpeed -= localCoord.m_right.Scale(sideSpeed * 0.9);
+		friction += localCoord.m_right.Scale(sideSpeed * 0.9);
 	}
-    NewtonBodySetVelocity(this->carBody, &this->speed[0]);
+    return friction.Scale(1/this->getTiresCount());
+}
+
+void BaseCar::applyOmegaFriction()
+{
+    dFloat turnAngle = this->getTire(0)->getTurnAngle();
+    dFloat expectedAnglularSpeed = 0;
+    if(turnAngle != 0) {
+		dFloat turnRaduis = this->distanceBetweenFrontAndRearTire / sin(turnAngle * DEGTORAD);
+		expectedAnglularSpeed = (this->speed % this->localCoordinates.m_front) / turnRaduis;
+	}
+    dFloat actualAngularSpeed = this->angularSpeed % this->localCoordinates.m_up;
+    if(dAbs(actualAngularSpeed - expectedAnglularSpeed) > 0.1) {
+		if(actualAngularSpeed > 0.1) {
+			this->angularSpeed = this->angularSpeed.Scale(0.5);
+		} else {
+			this->angularSpeed = this->angularSpeed.Scale(0.1);
+		}
+		NewtonBodySetOmega(this->carBody, &this->angularSpeed[0]);
+	}
 }
 
 void BaseCar::update(const float timeSpan)
@@ -64,6 +84,7 @@ void BaseCar::update(const float timeSpan)
 	NewtonBodyGetOmega(this->carBody, &this->angularSpeed[0]);
 	this->speed = globalPos.UnrotateVector(this->speed);
 	this->angularSpeed = globalPos.UnrotateVector(this->angularSpeed);
+	dVector lineralSpeed = this->speed;
 	for(int i=0, c=this->getTiresCount(); i < c; i++) {
 		SuspensionTire sTire = this->tires[i];
 		TireRayCast * tireCast = new TireRayCast(this, globalPos, sTire.t, sTire.suspensionLenght);
@@ -78,14 +99,14 @@ void BaseCar::update(const float timeSpan)
 			dFloat tireLoad = NewtonCalculateSpringDamperAcceleration (timeSpan, sTire.suspensionSpring, -suspensionCompression, sTire.suspensionDamper, tireSuspensionSpeed);
 			tireLoad *= this->getTireMassLoad();
 			dVector tireForce = globalPos.m_up.Scale(tireLoad);
-			tireForce += globalPos.m_front.Scale(sTire.t->getTorque());
+			tireForce += this->localCoordinates.m_front.Scale(sTire.t->getTorque()*5);
 			dVector torque = tireForce * (this->massCenter - sTire.t->getLocalPos());
 
 			tireForce = globalPos.RotateVector(tireForce);
 			torque = globalPos.RotateVector(torque);
 			NewtonBodyAddForce(this->carBody, &tireForce[0]);
 			NewtonBodyAddTorque(this->carBody, &torque[0]);
-			this->applyTireFriction(sTire);
+			lineralSpeed -= this->applyTireFriction(sTire);
 		} else {
 			sTire.t->setSuspension(sTire.suspensionLenght);
 		}
@@ -93,7 +114,9 @@ void BaseCar::update(const float timeSpan)
 
 		sTire.t->setTorque(0);
 	}
+    this->applyOmegaFriction();
 
+	NewtonBodySetVelocity(this->carBody, &lineralSpeed[0]); // apply tire friction
 	NewtonBodyAddForce(this->carBody, &this->gravity[0]);
 }
 
@@ -122,6 +145,14 @@ Tire *BaseCar::getTire(const int index) const
 
 void BaseCar::addSuspensionTire(Tire *t, const float suspensionLenght, const float suspensionSpring, const float suspensionDamper)
 {
+	for(int i=0; i<this->tiresC; i++) {
+		dFloat distance1 = this->getTire(i)->getLocalPos() % this->getLocalCoordinates().m_front;
+		dFloat distance2 = t->getLocalPos() % this->getLocalCoordinates().m_front;
+		dFloat distance = dAbs(distance1 - distance2);
+		if(distance > distance1 && distance > this->distanceBetweenFrontAndRearTire) {
+			this->distanceBetweenFrontAndRearTire = distance;
+		}
+	}
 	if(this->tiresC < this->tiresCount) {
 		t->setLocalCoordinates(this->getLocalCoordinates());
 		this->tires[this->tiresC].t = t;
@@ -150,14 +181,13 @@ void BaseCar::setCarBodyAndGravity(NewtonBody *carBody, const dVector &gravity)
     dFloat Izz;
     NewtonBodyGetMassMatrix(this->carBody, &this->mass, &Ixx, &Iyy, &Izz);
     NewtonBodyGetCentreOfMass(this->carBody, &this->massCenter[0]);
-    this->mass = 200;
+//    this->mass = 200;
     this->gravity = dVector(
     	gravity.m_x * this->mass,
     	gravity.m_y * this->mass,
     	gravity.m_z * this->mass,
     	1.0f
     );
-
 }
 
 dMatrix BaseCar::getLocalCoordinates() const
