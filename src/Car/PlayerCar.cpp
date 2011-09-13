@@ -41,6 +41,8 @@ void PlayerCar::update(dFloat timeSpan)
 		this->doTurnLeft();
 	} else if(this->controller->isKeyDown(KEY_KEY_D)) {
 		this->doTurnRight();
+	} else {
+		this->centerWheels();
 	}
 	Car::update(timeSpan);
 	//this->camera->setTarget(this->carNode->getPosition());

@@ -9,13 +9,15 @@
 #define CAR_H_
 
 #include "racingGame.h"
-#include "GameStateController.h"
+//#include "GameStateController.h"
 
-#include "BaseCar.h"
+#include "Car/BaseCar.h"
 
 #define WHEELS_COUNT 4
 
+class BaseCar;
 class GameStateController;
+
 
 void applyCarMoveForce(const NewtonBody* body, dFloat timestep, int threadIndex);
 void applyCarTransform (const NewtonBody* body, const dFloat* matrix, int threadIndex);
@@ -43,6 +45,7 @@ protected:
     void doBrake();
     void doTurnLeft();
     void doTurnRight();
+    void centerWheels();
 
 private:
     void init();

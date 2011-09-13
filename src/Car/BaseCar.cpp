@@ -8,13 +8,14 @@
 #include "BaseCar.h"
 
 
-BaseCar::BaseCar(int tiresCount, NewtonWorld * world)
+BaseCar::BaseCar(int tiresCount, NewtonWorld * world, GameStateController * controller)
 {
 	this->tiresCount = tiresCount;
 	this->tiresC = 0;
 	this->tires = new SuspensionTire[this->tiresCount];
 
 	this->world = world;
+	this->controller = controller;
 }
 
 
@@ -40,13 +41,13 @@ dVector BaseCar::applyTireFriction(SuspensionTire & sTire)
     dMatrix localCoord = sTire.t->getLocalCoordinates();
     dFloat frontSpeed = sTire.tireSpeed % localCoord.m_front;
     dVector friction(0,0,0,0);
-    if(dAbs(frontSpeed) > 0.1) {
+    if(dAbs(frontSpeed) > 0.01) {
     	friction += localCoord.m_front.Scale(frontSpeed * 0.2);
 	} else if(dAbs(frontSpeed) > 0) {
 		friction += localCoord.m_front.Scale(frontSpeed * 0.9);
 	}
     dFloat sideSpeed = this->speed % localCoord.m_right;
-    if(dAbs(sideSpeed) > 0.1) {
+    if(dAbs(sideSpeed) > 0.01) {
     	friction += localCoord.m_right.Scale(sideSpeed * 0.5);
 	} else if(dAbs(sideSpeed) > 0) {
 		friction += localCoord.m_right.Scale(sideSpeed * 0.9);
@@ -69,22 +70,26 @@ void BaseCar::applyOmegaFriction()
 		} else {
 			this->angularSpeed = this->angularSpeed.Scale(0.1);
 		}
-		NewtonBodySetOmega(this->carBody, &this->angularSpeed[0]);
+
 	}
 }
 
 void BaseCar::update(const float timeSpan)
 {
+	GameStateController::VectorDraw draw;
 	dMatrix globalPos;
 	NewtonBodyGetMatrix(this->carBody, &globalPos[0][0]);
-
 
 	// get the chassis instantaneous linear and angular velocity in the local space of the chassis
 	NewtonBodyGetVelocity(this->carBody, &this->speed[0]);
 	NewtonBodyGetOmega(this->carBody, &this->angularSpeed[0]);
+
 	this->speed = globalPos.UnrotateVector(this->speed);
+
 	this->angularSpeed = globalPos.UnrotateVector(this->angularSpeed);
-	dVector lineralSpeed = this->speed;
+
+	dVector resultForce(0,0,0,0);
+	dVector resultTorque(0,0,0,0);
 	for(int i=0, c=this->getTiresCount(); i < c; i++) {
 		SuspensionTire sTire = this->tires[i];
 		TireRayCast * tireCast = new TireRayCast(this, globalPos, sTire.t, sTire.suspensionLenght);
@@ -98,15 +103,25 @@ void BaseCar::update(const float timeSpan)
 
 			dFloat tireLoad = NewtonCalculateSpringDamperAcceleration (timeSpan, sTire.suspensionSpring, -suspensionCompression, sTire.suspensionDamper, tireSuspensionSpeed);
 			tireLoad *= this->getTireMassLoad();
-			dVector tireForce = globalPos.m_up.Scale(tireLoad);
-			tireForce += this->localCoordinates.m_front.Scale(sTire.t->getTorque()*5);
-			dVector torque = tireForce * (this->massCenter - sTire.t->getLocalPos());
+			dVector tireForce = this->localCoordinates.m_up.Scale(tireLoad);
 
-			tireForce = globalPos.RotateVector(tireForce);
-			torque = globalPos.RotateVector(torque);
-			NewtonBodyAddForce(this->carBody, &tireForce[0]);
-			NewtonBodyAddTorque(this->carBody, &torque[0]);
-			lineralSpeed -= this->applyTireFriction(sTire);
+			tireForce += this->localCoordinates.m_front.Scale(sTire.t->getTorque()*10);
+
+//			dVector torque = tireForce * (this->massCenter - sTire.t->getLocalPos());
+			dVector torque(0,0,0,0);
+			if (dAbs(this->speed % this->localCoordinates.m_front)!=0.0f && sTire.t->getTurnAngle() != 0) {
+				dVector turnForce = this->localCoordinates.m_right.Scale(sTire.t->getTurnAngle()*20) * this->speed;
+				torque -= turnForce ;//* (this->massCenter - sTire.t->getLocalPos());
+			}
+
+			resultForce += tireForce;
+			resultTorque += torque;
+
+			 this->speed -= this->applyTireFriction(sTire);
+
+			if(i== 0) {
+
+			}
 		} else {
 			sTire.t->setSuspension(sTire.suspensionLenght);
 		}
@@ -114,10 +129,34 @@ void BaseCar::update(const float timeSpan)
 
 		sTire.t->setTorque(0);
 	}
-    this->applyOmegaFriction();
+	this->applyOmegaFriction();
 
-	NewtonBodySetVelocity(this->carBody, &lineralSpeed[0]); // apply tire friction
-	NewtonBodyAddForce(this->carBody, &this->gravity[0]);
+	this->angularSpeed = globalPos.RotateVector(this->angularSpeed);
+	this->speed = globalPos.RotateVector(this->speed);
+
+//	NewtonBodySetOmega(this->carBody, &this->angularSpeed[0]);
+//	NewtonBodySetVelocity(this->carBody, &this->speed[0]); // apply tire friction
+
+	draw.vector = vector3df(resultTorque.m_x, resultTorque.m_y, resultTorque.m_z);
+	draw.color = SColor(0,255,0,0);
+	this->controller->addVectorDraw(draw);
+	resultForce = globalPos.RotateVector(resultForce);
+	resultTorque = globalPos.RotateVector(resultTorque);
+	draw.vector = vector3df(resultTorque.m_x, resultTorque.m_y, resultTorque.m_z);
+	draw.color = SColor(0,0,255,0);
+	this->controller->addVectorDraw(draw);
+
+	resultForce += this->gravity;
+	NewtonBodySetForce(this->carBody, &resultForce[0]);
+	NewtonBodySetTorque(this->carBody, &resultTorque[0]);
+
+
+//	draw.vector = vector3df(resultForce.m_x, resultForce.m_y, resultForce.m_z);
+//	draw.color = SColor(0,0,255,0);
+//	this->controller->addVectorDraw(draw);
+//	draw.vector = vector3df(resultTorque.m_x, resultTorque.m_y, resultTorque.m_z);
+//	draw.color = SColor(0,255,0,0);
+//	this->controller->addVectorDraw(draw);
 }
 
 

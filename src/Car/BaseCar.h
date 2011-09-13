@@ -11,12 +11,15 @@
 #include "racingGame.h"
 #include "Utility/Tire.h"
 #include "Utility/TireRayCast.h"
+#include "GameStateController.h"
+
 
 class TireRayCast;
+class GameStateController;
 
 class BaseCar {
 public:
-	BaseCar(int tiresCount, NewtonWorld * world);
+	BaseCar(int tiresCount, NewtonWorld * world, GameStateController * controller);
 	virtual ~BaseCar();
 
 	virtual void update(const float timeSpan);
@@ -32,6 +35,7 @@ public:
 protected:
     void setCarBodyAndGravity(NewtonBody *carBody, const dVector & gravity);
 private:
+    GameStateController * controller;
     dVector speed;
     dVector angularSpeed;
     dVector massCenter;

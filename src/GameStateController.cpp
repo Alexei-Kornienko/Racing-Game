@@ -216,6 +216,7 @@ void GameStateController::update(u32 timeSpan)
 
 
 
+
 void GameStateController::mainLoop()
 {
 	this->timer->start();
@@ -226,6 +227,16 @@ void GameStateController::mainLoop()
 
 		this->driver->beginScene(true, true, SColor(255,100,101,140));
 		this->smgr->drawAll();
+
+		for(int i=0, c=this->vectors.size(); i<c; i++) {
+			this->driver->draw3DLine(
+				vector3df(0,0,0),
+				this->vectors[i].vector,
+				this->vectors[i].color
+			);
+		}
+		this->vectors.clear();
+
 		this->guienv->drawAll();
 		this->driver->endScene();
 
@@ -350,6 +361,11 @@ void GameStateController::newGame()
 	}
 
 	device->getCursorControl()->setVisible(false);
+}
+
+void GameStateController::addVectorDraw(VectorDraw draw)
+{
+	this->vectors.push_back(draw);
 }
 
 void GameStateController::createFloorBody(NewtonCollision *collision, IAnimatedMeshSceneNode *floorNode, dVector origin)

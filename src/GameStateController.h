@@ -18,7 +18,7 @@
 #define PMENU_MAIN 5
 
 #include "racingGame.h"
-#include "Car/Car.h"
+//#include "Car/Car.h"
 
 class Car;
 class GameStateController : public IEventReceiver {
@@ -27,6 +27,13 @@ public:
 	virtual ~GameStateController();
 
 	void init(IrrlichtDevice * device);
+
+	struct VectorDraw {
+		vector3df vector;
+		SColor color;
+	};
+	void addVectorDraw(VectorDraw draw);
+
 
 	void mainLoop();
 
@@ -62,6 +69,7 @@ private:
 	bool paused;
 
 	core::array<IEventReceiver*> eventReceivers;
+	core::array<VectorDraw> vectors;
 
 	NewtonWorld * nWorld;
 	Car * car;

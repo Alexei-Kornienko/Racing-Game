@@ -29,7 +29,7 @@ void applyCarTransform (const NewtonBody* body, const dFloat* matrix, int thread
 
 
 
-Car::Car(GameStateController * controller) : BaseCar(WHEELS_COUNT, controller->getWorld())
+Car::Car(GameStateController * controller) : BaseCar(WHEELS_COUNT, controller->getWorld(), controller)
 {
 	this->controller = controller;
 	this->initModels(this->controller->getSmgr());
@@ -57,8 +57,8 @@ void Car::initModels(ISceneManager * smgr) {
 
 	this->wheelMesh = smgr->getMesh("res/wheel.obj");
 
-//	float wheelPosY = -0.2235f;
-	float wheelPosY = -0.4f;
+	float wheelPosY = -0.2235f;
+//	float wheelPosY = -0.4f;
 
 	this->wheels[0] = smgr->addAnimatedMeshSceneNode(
 		this->wheelMesh,
@@ -132,9 +132,9 @@ void Car::initVenichlePhysics(NewtonWorld *nWorld)
 	float wheelRaduis = 0.147f;
 	float wheelWidth = 0.104f;
 	float suspensionLenght = wheelRaduis;
-//	float suspensionSpring = 20.0f;
-	float suspensionSpring = 50.0f;
-	float suspensionDamper = 10.0f;
+	float suspensionSpring = 20.0f;
+//	float suspensionSpring = 50.0f;
+	float suspensionDamper = 5.0f;
 
 	for(int i=0; i<WHEELS_COUNT; i++) {
 		Tire * t = new Tire(
@@ -166,6 +166,9 @@ void Car::updateWheelsPos()
 		dVector tPos = this->getTire(i)->getLocalPos();
 		vector3df pos(tPos.m_x, tPos.m_y, tPos.m_z);
 		this->wheels[i]->setPosition(pos);
+		vector3df rot = this->wheels[i]->getRotation();
+		rot.Y = this->getTire(i)->getTurnAngle();
+		this->wheels[i]->setRotation(rot);
 	}
 }
 
@@ -173,15 +176,6 @@ void Car::update(dFloat timeSpan)
 {
 	BaseCar::update(timeSpan);
     this->updateWheelsPos();
-	stringw text = "Position";
-	text += stringw(" X:") + stringw(this->carNode->getPosition().X);
-	text += stringw(" Y:") + stringw(this->carNode->getPosition().Y);
-	text += stringw(" Z:") + stringw(this->carNode->getPosition().Z);
-	text += "\nRotation";
-	text += stringw(" X:") + stringw(this->carNode->getRotation().X);
-	text += stringw(" Y:") + stringw(this->carNode->getRotation().Y);
-	text += stringw(" Z:") + stringw(this->carNode->getRotation().Z);
-	this->controller->getTextField()->setText(text.c_str());
 }
 
 vector3df Car::getPosition() const
@@ -225,6 +219,11 @@ void Car::doTurnRight()
 {
 	this->getTire(0)->setSteerDirection(1);
 	this->getTire(1)->setSteerDirection(1);
+}
+
+void Car::centerWheels() {
+	this->getTire(0)->setSteerDirection(0);
+	this->getTire(1)->setSteerDirection(0);
 }
 
 vector3df Car::getDirection() const
