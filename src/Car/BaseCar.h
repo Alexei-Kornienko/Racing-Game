@@ -55,9 +55,16 @@ private:
     float mass;
     dVector gravity;
     dMatrix localCoordinates;
+    dMatrix globalCoordinates;
+    dVector currentBodyForce;
+    dVector currentBodyTorque;
+
+    void getUpdatedGlobalState();
+    dVector applyTireLoad(SuspensionTire & sTire, const TireRayCast * tireCast, const float timeSpan);
+    dVector applyTireForce(const Tire * t);
     void applyOmegaFriction();
     dVector applyTireFriction(SuspensionTire & sTire);
-    float getTireMassLoad();
+    float getTireMassLoad(const SuspensionTire & sTire);
 };
 
 #endif /* BASECAR_H_ */
