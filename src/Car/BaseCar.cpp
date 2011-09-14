@@ -40,7 +40,7 @@ dVector BaseCar::applyTireFriction(SuspensionTire & sTire)
 {
     dMatrix localCoord = sTire.t->getLocalCoordinates();
     dVector friction(0,0,0,0);
-    dVector carForceSum = this->currentBodyForce + this->speed.Scale(this->getTireMassLoad(sTire));
+    dVector carForceSum = this->speed.Scale(this->getTireMassLoad(sTire));
     dFloat frontForce = carForceSum % localCoord.m_front;
 
     dFloat rollintFriction = 0.002/sTire.t->getRaduis() * sTire.tireLoad;
@@ -51,10 +51,7 @@ dVector BaseCar::applyTireFriction(SuspensionTire & sTire)
     }
 
     dFloat sideForce = carForceSum % localCoord.m_right;
-    dFloat slideFriction = 0.5 * sTire.tireLoad * 80;
-    if(dAbs(sideForce) < dAbs(slideFriction)) {
-    	slideFriction = dAbs(sideForce);
-    }
+    dFloat slideFriction = 0.5 * sTire.tireLoad * 2;
     if(dAbs(sideForce) > 0.01) {
     	dVector sF = localCoord.m_right.Scale(slideFriction);
 		if(sideForce > 0) {
@@ -62,11 +59,8 @@ dVector BaseCar::applyTireFriction(SuspensionTire & sTire)
 		} else {
 			friction += sF;
 		}
-
-
     }
-	//printf("Friction X:%f Y:%f Z:%f \n", friction.m_x,friction.m_y,friction.m_z);
-    return friction;//.Scale(1/this->getTiresCount());
+    return friction;
 }
 
 dVector BaseCar::applyOmegaFriction(SuspensionTire & sTire)
@@ -148,9 +142,7 @@ void BaseCar::update(const float timeSpan)
 		if(tireCast->hasContact()) {
 			tireForce += this->applyTireLoad(sTire, tireCast, timeSpan);
 			tireForce += this->applyTireForce(sTire.t);
-			if(i==0) {
-				tireForce += this->applyTireFriction(sTire);
-			}
+			tireForce += this->applyTireFriction(sTire);
 
 			tireTorque += tireForce * (this->massCenter - sTire.t->getLocalPos());
 			tireTorque += this->applyOmegaFriction(sTire);
