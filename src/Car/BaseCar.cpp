@@ -13,12 +13,9 @@ BaseCar::BaseCar(int tiresCount, NewtonWorld * world, GameController * controlle
 	this->tiresCount = tiresCount;
 	this->tiresC = 0;
 	this->tires = new SuspensionTire[this->tiresCount];
-
 	this->world = world;
 	this->controller = controller;
 }
-
-
 
 BaseCar::~BaseCar()
 {
@@ -30,9 +27,7 @@ BaseCar::~BaseCar()
 	this->tiresCount = 0;
 }
 
-
-
-float BaseCar::getTireMassLoad(const SuspensionTire & sTire)
+dFloat BaseCar::getTireMassLoad(const SuspensionTire & sTire)
 {
     return this->mass / this->getTiresCount();
 }
@@ -92,16 +87,16 @@ dVector BaseCar::applyTireForce(const Tire * t)
 	return t->getLocalCoordinates().m_front.Scale(t->getTorque()*10);
 }
 
-dVector BaseCar::applyTireLoad(SuspensionTire & sTire, const TireRayCast * tireCast, const float timeSpan)
+dVector BaseCar::applyTireLoad(SuspensionTire & sTire, const TireRayCast & tireCast, const dFloat timeSpan)
 {
-    sTire.t->setSuspension(sTire.suspensionLenght * tireCast->getHitDistance());
+    sTire.t->setSuspension(sTire.suspensionLenght * tireCast.getHitDistance());
     sTire.tireLoad = NewtonCalculateSpringDamperAcceleration(
-				timeSpan,
-				sTire.suspensionSpring,
-				-((1 - tireCast->getHitDistance()) / 2),
-				sTire.suspensionDamper,
-				sTire.tireSpeed % this->localCoordinates.m_up
-			);
+		timeSpan,
+		sTire.suspensionSpring,
+		-((1 - tireCast.getHitDistance()) / 2),
+		sTire.suspensionDamper,
+		sTire.tireSpeed % this->localCoordinates.m_up
+	);
     sTire.tireLoad *= this->getTireMassLoad(sTire);
     dVector tireForce = this->localCoordinates.m_up.Scale(sTire.tireLoad);
     return tireForce;
@@ -111,7 +106,7 @@ void BaseCar::getUpdatedGlobalState()
 {
     NewtonBodyGetMatrix(this->carBody, &this->globalCoordinates[0][0]);
 
-    // get the chassis instantaneous linear and angular velocity in the local space of the chassis
+    // get the car instantaneous linear and angular velocity and force in the local space of the car
     NewtonBodyGetVelocity(this->carBody, &this->speed[0]);
     this->speed = this->globalCoordinates.UnrotateVector(this->speed);
 
@@ -125,10 +120,8 @@ void BaseCar::getUpdatedGlobalState()
     this->currentBodyTorque = this->globalCoordinates.UnrotateVector(this->currentBodyTorque);
 }
 
-void BaseCar::update(const float timeSpan)
+void BaseCar::update(const dFloat timeSpan)
 {
-	GameController::VectorDraw draw;
-
     this->getUpdatedGlobalState();
 
 	dVector resultForce(0,0,0,0);
@@ -138,9 +131,9 @@ void BaseCar::update(const float timeSpan)
 		dVector tireTorque(0,0,0,0);
 		SuspensionTire sTire = this->tires[i];
 		sTire.tireSpeed = this->speed + this->angularSpeed * sTire.t->getLocalPos();
-		TireRayCast * tireCast = new TireRayCast(this, this->globalCoordinates, sTire.t, sTire.suspensionLenght);
-		tireCast->castRay();
-		if(tireCast->hasContact()) {
+		TireRayCast tireCast(this, this->globalCoordinates, sTire.t, sTire.suspensionLenght);
+		tireCast.castRay();
+		if(tireCast.hasContact()) {
 			tireForce += this->applyTireLoad(sTire, tireCast, timeSpan);
 			tireForce += this->applyTireForce(sTire.t);
 			tireForce += this->applyTireFriction(sTire);
@@ -148,15 +141,13 @@ void BaseCar::update(const float timeSpan)
 			tireTorque += tireForce * (this->massCenter - sTire.t->getLocalPos());
 			tireTorque += this->applyOmegaFriction(sTire);
 			if (dAbs(this->speed % this->localCoordinates.m_front)!=0.0f && sTire.t->getTurnAngle() != 0) {
-				dVector turnForce = this->localCoordinates.m_right.Scale(sTire.t->getTurnAngle()*20) * this->speed;
-				tireTorque -= turnForce;
+				tireTorque -= this->localCoordinates.m_right.Scale(sTire.t->getTurnAngle()*15) * this->speed;
 			}
 			resultForce += tireForce;
 			resultTorque += tireTorque;
 		} else {
 			sTire.t->setSuspension(sTire.suspensionLenght);
 		}
-		delete tireCast;
 
 		sTire.t->setTorque(0);
 	}
@@ -191,7 +182,7 @@ Tire *BaseCar::getTire(const int index) const
 
 
 
-void BaseCar::addSuspensionTire(Tire *t, const float suspensionLenght, const float suspensionSpring, const float suspensionDamper)
+void BaseCar::addSuspensionTire(Tire *t, const dFloat suspensionLenght, const dFloat suspensionSpring, const dFloat suspensionDamper)
 {
 	for(int i=0; i<this->tiresC; i++) {
 		dFloat distance1 = this->getTire(i)->getLocalPos() % this->getLocalCoordinates().m_front;
@@ -216,11 +207,6 @@ NewtonBody *BaseCar::getCarBody() const
     return carBody;
 }
 
-void BaseCar::setTirePosTest()
-{
-
-}
-
 void BaseCar::setCarBodyAndGravity(NewtonBody *carBody, const dVector &gravity)
 {
     this->carBody = carBody;
@@ -229,7 +215,6 @@ void BaseCar::setCarBodyAndGravity(NewtonBody *carBody, const dVector &gravity)
     dFloat Izz;
     NewtonBodyGetMassMatrix(this->carBody, &this->mass, &Ixx, &Iyy, &Izz);
     NewtonBodyGetCentreOfMass(this->carBody, &this->massCenter[0]);
-//    this->mass = 200;
     this->gravity = dVector(
     	gravity.m_x * this->mass,
     	gravity.m_y * this->mass,

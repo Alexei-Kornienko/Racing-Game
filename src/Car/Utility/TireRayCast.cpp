@@ -66,15 +66,15 @@ bool TireRayCast::hasContact()
 
 dFloat TireRayCast::getHitDistance() const
 {
-    return (hitDistance*2 - 1);
+    return (this->hitDistance*2 - 1);
 }
 
 dVector TireRayCast::getHitNormal() const
 {
-    return hitNormal;
+    return this->hitNormal;
 }
 
 Tire *TireRayCast::getTire() const
 {
-    return tire;
+    return this->tire;
 }

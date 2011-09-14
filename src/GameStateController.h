@@ -27,10 +27,6 @@ public:
 
 	void init(IrrlichtDevice * device);
 
-	struct VectorDraw {
-		vector3df vector;
-		SColor color;
-	};
 	void mainLoop();
 
 	bool OnEvent(const SEvent& event);

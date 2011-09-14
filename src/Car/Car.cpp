@@ -176,7 +176,6 @@ void Car::initVenichlePhysics(NewtonWorld *nWorld)
 			suspensionDamper
 		);
 	}
-	this->setTirePosTest();
 }
 
 vector3df Car::getSpeed() const
