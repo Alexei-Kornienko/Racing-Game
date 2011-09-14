@@ -19,11 +19,10 @@ Tire::Tire(dVector localPos, dFloat tireMass, dFloat tireRaduis, dFloat tireWidt
 	this->spinAngle = 0;
 }
 
-Tire::~Tire() {
+Tire::~Tire()
+{
 
 }
-
-
 
 void Tire::setLocalCoordinates(dMatrix localCoordinates)
 {
@@ -36,22 +35,22 @@ void Tire::setSuspension(const dFloat value)
 	this->localPos = this->getHarpoint() - this->getLocalCoordinates().m_up.Scale(value);
 }
 
-float Tire::getAngularSpeed() const
+dFloat Tire::getAngularSpeed() const
 {
     return angularSpeed;
 }
 
-float Tire::getSpinAngle() const
+dFloat Tire::getSpinAngle() const
 {
     return spinAngle;
 }
 
-void Tire::setAngularSpeed(float angularSpeed)
+void Tire::setAngularSpeed(dFloat angularSpeed)
 {
     this->angularSpeed = angularSpeed;
 }
 
-void Tire::setSpinAngle(float spinAngle)
+void Tire::setSpinAngle(dFloat spinAngle)
 {
     this->spinAngle = spinAngle;
 }

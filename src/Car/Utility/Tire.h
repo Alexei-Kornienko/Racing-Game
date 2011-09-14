@@ -12,43 +12,42 @@
 
 class Tire {
 public:
-	Tire(
-		dVector localPos, float tireMass, float tireRaduis, float tireWidth, void *userData);
+	Tire(dVector localPos, dFloat tireMass, dFloat tireRaduis, dFloat tireWidth, void *userData);
     ~Tire();
-    void setTorque(const float torque);
-    void setBrake(const float torque);
-    void setSteerDirection(const float direction);
-    float getMass() const;
-    float getRaduis() const;
-    float getTorque() const;
-    float getTurnAngle() const;
+    void setTorque(const dFloat torque);
+    void setBrake(const dFloat torque);
+    void setSteerDirection(const dFloat direction);
+    dFloat getMass() const;
+    dFloat getRaduis() const;
+    dFloat getTorque() const;
+    dFloat getTurnAngle() const;
     void *getUserData() const;
-    float getWidth() const;
+    dFloat getWidth() const;
     dVector getLocalPos() const;
     void setLocalPos(dVector localPos);
     dVector getHarpoint() const;
-    void setSuspension(const float value);
+    void setSuspension(const dFloat value);
     dMatrix getLocalCoordinates() const;
     void setLocalCoordinates(dMatrix localCoordinates);
-    float getAngularSpeed() const;
-    float getSpinAngle() const;
-    void setAngularSpeed(float angularSpeed);
-    void setSpinAngle(float spinAngle);
+    dFloat getAngularSpeed() const;
+    dFloat getSpinAngle() const;
+    void setAngularSpeed(dFloat angularSpeed);
+    void setSpinAngle(dFloat spinAngle);
 protected:
 private:
     dMatrix localCoordinates; // local coordinate system of the tire
     dVector harpoint; // initial position of the tire (without suspension)
     dVector localPos; // local position of the tire (with suspension)
-    float turnAngle;
-    float angularSpeed;
-    float spinAngle;
-    float mass;
-    float raduis;
-    float width;
-    float torque;
-    float brakeTorque;
+    dFloat turnAngle;
+    dFloat angularSpeed;
+    dFloat spinAngle;
+    dFloat mass;
+    dFloat raduis;
+    dFloat width;
+    dFloat torque;
+    dFloat brakeTorque;
     void *userData;
-    float generateTiresSteerAngle(const float value) const;
+    dFloat generateTiresSteerAngle(const dFloat value) const;
 
 };
 

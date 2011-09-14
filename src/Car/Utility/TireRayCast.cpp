@@ -29,6 +29,7 @@ void TireRayCast::castRay()
 	dVector sVectorUp =  this->car->getLocalCoordinates().m_up.Scale(
 		(this->suspensionLenght - this->tire->getRaduis())
 	);
+	sVectorUp = this->globalSpace.RotateVector(sVectorUp);
 	sVectorDown = this->globalSpace.RotateVector(sVectorDown);
 	dVector tireRayDirection = tirePosGlobal - sVectorDown;
 	tirePosGlobal += sVectorUp;

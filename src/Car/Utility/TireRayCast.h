@@ -23,7 +23,7 @@ public:
 	static dFloat filterCallback(const NewtonBody *body, const dFloat *hitNormal, int collisionID, void *userData, dFloat intersectParam);
     static unsigned preFilterCallback(const NewtonBody *body, const NewtonCollision *collision, void *userData);
     bool hasContact();
-    float getHitDistance() const;
+    dFloat getHitDistance() const;
     dVector getHitNormal() const;
     Tire *getTire() const;
 private:

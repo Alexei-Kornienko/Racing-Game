@@ -50,7 +50,7 @@ bool GameController::OnEvent(const SEvent & event)
 // This is used to check whether a key is being held down
 bool GameController::isKeyDown(EKEY_CODE keyCode) const
 {
-		return this->keysDown[keyCode];
+	return this->keysDown[keyCode];
 }
 
 void GameController::exit()
@@ -60,8 +60,6 @@ void GameController::exit()
 	}
 	this->device->closeDevice();
 }
-
-
 
 GameController::GameController(IrrlichtDevice *device)
 {
@@ -85,8 +83,6 @@ GameController::GameController(IrrlichtDevice *device)
 
 	this->init(device);
 }
-
-
 
 void GameController::pause()
 {
@@ -137,20 +133,13 @@ void GameController::pause()
 			L"Main menu",
 			L"Return to main menu"
 		);
-
-
-
 	}
 }
-
-
 
 GameController::~GameController()
 {
 	this->releaseCars();
 }
-
-
 
 void GameController::init(IrrlichtDevice *device)
 {
@@ -159,26 +148,17 @@ void GameController::init(IrrlichtDevice *device)
 	SColorf color(1,1,1);
 	this->driver->setAmbientLight(color);
 
-
 	this->smgr = device->getSceneManager();
 	this->guienv = device->getGUIEnvironment();
 	this->timer = device->getTimer();
 
 	this->device->setEventReceiver(this);
-
 	this->guienv->setUserEventReceiver(this);
 }
-
-
 
 ISceneManager *GameController::getSmgr() const
 {
     return smgr;
-}
-
-void GameController::setSmgr(ISceneManager *smgr)
-{
-    this->smgr = smgr;
 }
 
 void GameController::update(u32 timeSpan)
@@ -191,8 +171,16 @@ void GameController::update(u32 timeSpan)
 	}
 }
 
-
-
+void GameController::updateFPS()
+{
+    u32 fps = this->driver->getFPS();
+    if(this->lastFPS != fps){
+        stringw title(L"Flatout :) - FPS:");
+        title += stringw(fps);
+        this->device->setWindowCaption(title.c_str());
+        this->lastFPS = fps;
+    }
+}
 
 void GameController::mainLoop()
 {
@@ -208,30 +196,83 @@ void GameController::mainLoop()
 		this->driver->endScene();
 
 		this->update(timeSpan);
-		u32 fps = this->driver->getFPS();
-		if(this->lastFPS != fps) {
-			stringw title(L"Flatout :) - FPS:");
-			title += stringw(fps);
-			this->device->setWindowCaption(title.c_str());
-			this->lastFPS = fps;
-		}
+
+		this->updateFPS();
+
 		this->lastUpdate = this->timer->getTime();
 	}
 }
 
+void GameController::createGameLevel()
+{
+    IAnimatedMesh *floor = this->smgr->getMesh("res/floor.obj");
+    float scale = 1.0;
+    vector3df floorScale(scale, scale, scale);
+    IAnimatedMeshSceneNode *floorNode = this->smgr->addAnimatedMeshSceneNode(
+    	floor, 0, 0,
+    	vector3df(0, 0, 0),
+    	vector3df(0, 0, 0),
+    	floorScale
+    );
 
+    vector3df v1 = floorNode->getBoundingBox().MinEdge * scale;
+    vector3df v2 = floorNode->getBoundingBox().MaxEdge * scale;
+    dVector minBox(v1.X, v1.Y, v1.Z);
+    dVector maxBox(v2.X, v2.Y, v2.Z);
+    dVector size(maxBox - minBox);
+    dVector origin((maxBox + minBox).Scale(0.5f));
+    float floorPlaneWidth = 0.1f;
+    size.m_y = floorPlaneWidth;
+    size.m_w = 1.0f;
+    origin.m_w = 1.0f;
+    dMatrix offset(GetIdentityMatrix());
+    offset.m_posit = origin;
+    NewtonCollision *collision = NewtonCreateBox(this->nWorld, size.m_x, size.m_y, size.m_z, 0, &offset[0][0]);
+    this->createFloorBody(collision, floorNode, origin);
 
+    IAnimatedMeshSceneNode *wall1 = this->smgr->addAnimatedMeshSceneNode(
+    	floor, 0, 0,
+    	vector3df(0, 3, 18),
+    	vector3df(-20, 0, 0),
+    	floorScale
+    );
+    this->createFloorBody(collision, wall1, origin);
 
+    IAnimatedMeshSceneNode *wall2 = this->smgr->addAnimatedMeshSceneNode(
+    	floor, 0, 0,
+    	vector3df(0, 3, -18),
+    	vector3df(20, 0, 0),
+    	floorScale
+    );
+    this->createFloorBody(collision, wall2, origin);
+
+    IAnimatedMeshSceneNode *wall3 = this->smgr->addAnimatedMeshSceneNode(
+    	floor, 0, 0,
+    	vector3df(18, 3, 0),
+    	vector3df(0, 0, 20),
+    	floorScale
+    );
+    this->createFloorBody(collision, wall3, origin);
+
+    IAnimatedMeshSceneNode *wall4 = this->smgr->addAnimatedMeshSceneNode(
+    	floor, 0, 0,
+    	vector3df(-18, 3, 0),
+    	vector3df(0, 0, -20),
+    	floorScale
+    );
+    this->createFloorBody(collision, wall4, origin);
+}
 
 void GameController::newGame()
 {
+	this->clearScene();
+
 	this->timer->setTime(0);
-	this->smgr->clear();
+
 	this->smgr->addLightSceneNode(0, vector3df(10,10,10), SColorf(1,1,1),10);
 	this->smgr->addLightSceneNode(0, vector3df(10,10,-10), SColorf(1,1,1),10);
 	this->smgr->addLightSceneNode(0, vector3df(-10,10,10), SColorf(1,1,1),10);
 	this->smgr->addLightSceneNode(0, vector3df(-10,10,-10), SColorf(1,1,1),10);
-	this->guienv->clear();
 
 	device->getCursorControl()->setVisible(false);
 
@@ -246,7 +287,7 @@ void GameController::newGame()
 
 	this->nWorld = NewtonCreate();
 
-	// set a fix world size
+	// set a fixed world size
 	dVector minSize (-500.0f, -10.f, -500.0f);
 	dVector maxSize ( 500.0f,  30.0f,  500.0f);
 	NewtonSetWorldSize(this->nWorld, &minSize[0], &maxSize[0]);
@@ -256,70 +297,8 @@ void GameController::newGame()
 	NewtonSetSolverModel(this->nWorld, 1);
 
 	NewtonSetFrictionModel(this->nWorld, 1);
+    this->createGameLevel(); // TODO create normal level
 
-	IAnimatedMesh * floor = this->smgr->getMesh("res/floor.obj");
-
-	float scale = 1.0;
-	IAnimatedMeshSceneNode * floorNode = this->smgr->addAnimatedMeshSceneNode(
-		floor, 0, 0,
-		vector3df(0,0,0),
-		vector3df(0,0,0),
-		vector3df(scale,scale,scale)
-	); // TODO create normal level
-	vector3df v1 = floorNode->getBoundingBox().MinEdge * scale;
-	vector3df v2 = floorNode->getBoundingBox().MaxEdge * scale;
-
-	dVector minBox(v1.X, v1.Y, v1.Z);
-	dVector maxBox(v2.X, v2.Y, v2.Z);
-
-	dVector size(maxBox - minBox);
-	dVector origin((maxBox + minBox).Scale(0.5f));
-
-	float floorPlaneWidth = 0.1f;
-	size.m_y = floorPlaneWidth;
-	size.m_w = 1.0f;
-	origin.m_w = 1.0f;
-
-	dMatrix offset(GetIdentityMatrix());
-	offset.m_posit = origin;
-	NewtonCollision* collision = NewtonCreateBox(nWorld, size.m_x, size.m_y, size.m_z, 0, &offset[0][0]);
-
-    this->createFloorBody(collision, floorNode, origin);
-
-    IAnimatedMeshSceneNode * wall1 = this->smgr->addAnimatedMeshSceneNode(
-		floor, 0, 0,
-		vector3df(0,3,18),
-		vector3df(-20,0,0),
-		vector3df(scale,scale,scale)
-	);
-
-    this->createFloorBody(collision, wall1, origin);
-
-    IAnimatedMeshSceneNode * wall2 = this->smgr->addAnimatedMeshSceneNode(
-		floor, 0, 0,
-		vector3df(0,3,-18),
-		vector3df(20,0,0),
-		vector3df(scale,scale,scale)
-	);
-    this->createFloorBody(collision, wall2, origin);
-
-    IAnimatedMeshSceneNode * wall3 = this->smgr->addAnimatedMeshSceneNode(
-		floor, 0, 0,
-		vector3df(18,3,0),
-		vector3df(0,0,20),
-		vector3df(scale,scale,scale)
-	);
-    this->createFloorBody(collision, wall3, origin);
-
-	IAnimatedMeshSceneNode * wall4 = this->smgr->addAnimatedMeshSceneNode(
-		floor, 0, 0,
-		vector3df(-18,3,0),
-		vector3df(0,0,-20),
-		vector3df(scale,scale,scale)
-	);
-	this->createFloorBody(collision, wall4, origin);
-
-//	this->releaseCars();
 	this->car = new PlayerCar(this);
 	for(u32 i =0; i<AI_COUNT; i++) {
 		this->aiCars.push_back(new AI_Car(this, this->car));
@@ -401,11 +380,16 @@ void GameController::createFloorBody(NewtonCollision *collision, IAnimatedMeshSc
     NewtonBodySetCentreOfMass(floorBody, &origin[0]);
 }
 
+void GameController::clearScene()
+{
+    this->smgr->clear();
+    this->guienv->clear();
+}
+
 void GameController::mainMenu()
 {
 	this->releaseCars();
-	this->smgr->clear();
-	this->guienv->clear();
+    this->clearScene();
 
 	dimension2du size = this->driver->getScreenSize();
 

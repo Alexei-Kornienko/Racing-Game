@@ -51,7 +51,6 @@ protected:
 	u32 updateInterval;
 
 	void update(u32 timeSpan);
-	void setSmgr(ISceneManager *smgr);
 private:
 	IrrlichtDevice * device;
 	IVideoDriver * driver;
@@ -59,6 +58,9 @@ private:
 	IGUIEnvironment * guienv;
 	void releaseCars();
     void createFloorBody(NewtonCollision *collision, IAnimatedMeshSceneNode *floorNode, dVector origin);
+    void createGameLevel();
+    void updateFPS();
+    void clearScene();
 
 	ITimer * timer;
 	bool paused;
