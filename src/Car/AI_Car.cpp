@@ -46,3 +46,10 @@ void AI_Car::update(dFloat timeSpan)
 	Car::update(timeSpan);
 }
 
+void AI_Car::carDestroyed()
+{
+	this->controller->aiDeath(this);
+}
+
+
+

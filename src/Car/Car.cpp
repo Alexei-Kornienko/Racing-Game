@@ -27,6 +27,28 @@ void applyCarTransform (const NewtonBody* body, const dFloat* matrix, int thread
 	}
 }
 
+void applyCarCollisionForce(const NewtonJoint* contact, dFloat timestep, int threadIndex) {
+	void * userData1 = NewtonBodyGetUserData(NewtonJointGetBody0(contact));
+	void * userData2 = NewtonBodyGetUserData(NewtonJointGetBody1(contact));
+	if(userData1 == 0 || userData2 == 0) {
+		return;
+	}
+	Car * car1 = (Car *)userData1;
+	Car * car2 = (Car *)userData2;
+	NewtonJoint * carContact = (NewtonJoint *) NewtonContactJointGetFirstContact(contact);
+	do {
+		dFloat collisionSpeed = NewtonMaterialGetContactNormalSpeed(
+			NewtonContactGetMaterial(carContact)
+		);
+		collisionSpeed = dAbs(collisionSpeed);
+		if(collisionSpeed > 3) {
+			car1->applyDamagePoints(collisionSpeed);
+			car2->applyDamagePoints(collisionSpeed);
+		}
+		carContact = (NewtonJoint *) NewtonContactJointGetNextContact(contact, carContact);
+	} while(carContact);
+}
+
 
 
 Car::Car(GameStateController * controller) : BaseCar(WHEELS_COUNT, controller->getWorld(), controller)
@@ -42,6 +64,7 @@ Car::Car(GameStateController * controller) : BaseCar(WHEELS_COUNT, controller->g
 void Car::init()
 {
     this->helthPoints = 100;
+    this->damaged = false;
 }
 
 void Car::initModels(ISceneManager * smgr) {
@@ -121,6 +144,9 @@ void Car::initPhysics() {
 	NewtonBodySetForceAndTorqueCallback(body, applyCarMoveForce);
 	NewtonBodySetTransformCallback(body, applyCarTransform);
 
+	int matId = NewtonMaterialGetDefaultGroupID(nWorld);
+	NewtonMaterialSetCollisionCallback(nWorld, matId, matId, this, 0, applyCarCollisionForce);
+
 	this->setCarBodyAndGravity(body, dVector(0,-10,0,0));
 	this->setLocalCoordinates(this->createChassisMatrix());
 }
@@ -160,6 +186,16 @@ vector3df Car::getSpeed() const
 	return vector3df(v.m_x, v.m_y, v.m_z) ;
 }
 
+void Car::applyDamagePoints(int helthPoints)
+{
+    this->helthPoints -= helthPoints;
+    if(this->helthPoints < 0) {
+
+    } else if(this->helthPoints < 50 && !this->damaged) {
+    	this->carNode->setMesh(this->carMeshDamaged);
+    }
+}
+
 void Car::updateWheelsPos()
 {
 	for(int i=0, c=this->getTiresCount(); i<c; i++) {
@@ -174,6 +210,9 @@ void Car::updateWheelsPos()
 
 void Car::update(dFloat timeSpan)
 {
+	if(this->getPosition().Y < -5) {
+		this->carDestroyed();
+	}
 	BaseCar::update(timeSpan);
     this->updateWheelsPos();
 }

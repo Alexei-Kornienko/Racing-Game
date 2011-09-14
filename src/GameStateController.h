@@ -8,7 +8,7 @@
 #ifndef CONTROLLER_H_
 #define CONTROLLER_H_
 
-#define AI_COUNT 0
+#define AI_COUNT 4
 
 #define	MENU_NEW_GAME 1
 #define	MENU_OPTIONS 2
@@ -46,6 +46,8 @@ public:
 	void mainMenu();
 	void pause();
 	void exit();
+	void gameOver(bool win);
+	void aiDeath(Car * car);
     ISceneManager *getSmgr() const;
     NewtonWorld *getWorld() const;
     IGUIStaticText * getTextField() const;

@@ -15,12 +15,12 @@ class PlayerCar : public Car {
 public:
 	PlayerCar(GameStateController * controller);
 	virtual ~PlayerCar();
-	virtual void update(dFloat timeSpan);
+	void update(dFloat timeSpan);
 
     ICameraSceneNode *getCamera() const;
 
 protected:
-
+    void carDestroyed();
 private:
 	ICameraSceneNode * camera;
 };

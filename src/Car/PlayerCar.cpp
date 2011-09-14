@@ -53,5 +53,12 @@ ICameraSceneNode *PlayerCar::getCamera() const
     return camera;
 }
 
+void PlayerCar::carDestroyed()
+{
+	this->controller->gameOver(false);
+}
+
+
+
 
 

@@ -21,10 +21,12 @@ class GameStateController;
 
 void applyCarMoveForce(const NewtonBody* body, dFloat timestep, int threadIndex);
 void applyCarTransform (const NewtonBody* body, const dFloat* matrix, int threadIndex);
+void applyCarCollisionForce(const NewtonJoint* contact, dFloat timestep, int threadIndex);
 
 class Car : private BaseCar {
 friend void applyCarMoveForce(const NewtonBody* body, float timestep, int threadIndex);
 friend void applyCarTransform(const NewtonBody *body, const float *matrix, int threadIndex);
+friend void applyCarCollisionForce(const NewtonJoint* contact, float timestep, int threadIndex);
 public:
     Car(GameStateController *controller);
     virtual ~Car();
@@ -32,9 +34,10 @@ public:
     int getHelthPoints() const;
     vector3df getPosition() const;
     vector3df getDirection() const;
-	void setPosition(const vector3df pos);
-	float getWheelsTurn() const;
-	vector3df getSpeed() const;
+    void setPosition(const vector3df pos);
+    float getWheelsTurn() const;
+    vector3df getSpeed() const;
+
 protected:
     GameStateController *controller;
     IAnimatedMeshSceneNode *carNode;
@@ -46,7 +49,9 @@ protected:
     void doTurnLeft();
     void doTurnRight();
     void centerWheels();
+    virtual void carDestroyed() = 0;
 
+    void applyDamagePoints(int helthPoints);
 private:
     void init();
     void initModels(ISceneManager*);
@@ -60,6 +65,7 @@ private:
 
 
 	int helthPoints;
+	bool damaged;
 
 	IAnimatedMesh * carMeshClean;
 	IAnimatedMesh * carMeshDamaged;

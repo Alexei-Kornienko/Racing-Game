@@ -368,10 +368,29 @@ void GameStateController::addVectorDraw(VectorDraw draw)
 	this->vectors.push_back(draw);
 }
 
+void GameStateController::gameOver(bool win)
+{
+	this->pause();
+}
+
+void GameStateController::aiDeath(Car *car)
+{
+	for(int i=0, c=this->aiCars.size(); i<c; i++) {
+		if(car == this->aiCars[i]) {
+			delete this->aiCars[i];
+			this->aiCars[i] = 0;
+			this->aiCars.erase(i);
+		}
+	}
+	if(this->aiCars.size() == 0) {
+		this->gameOver(true);
+	}
+}
+
 void GameStateController::createFloorBody(NewtonCollision *collision, IAnimatedMeshSceneNode *floorNode, dVector origin)
 {
     NewtonBody *floorBody = NewtonCreateBody(nWorld, collision, floorNode->getRelativeTransformation().pointer());
-    NewtonBodySetUserData(floorBody, floorNode);
+    NewtonBodySetUserData(floorBody, 0);
     dVector inertia;
     NewtonConvexCollisionCalculateInertialMatrix(collision, &inertia[0], &origin[0]);
     NewtonBodySetMassMatrix(floorBody, 0, 0, 0, 0);
@@ -438,16 +457,17 @@ void GameStateController::releaseCars()
 		this->nWorld = 0;
 	}
 
-//	if(this->car) {
-//		delete this->car;
-//		this->car = 0;
-//	}
-//	u32 size = this->aiCars.size();
-//	for(u32 i =0; i<size; i++) {
-//		if(this->aiCars[i]) {
-//			delete this->aiCars[i];
-//		}
-//	}
+	if(this->car) {
+		delete this->car;
+		this->car = 0;
+	}
+	u32 size = this->aiCars.size();
+	for(u32 i =0; i<size; i++) {
+		if(this->aiCars[i]) {
+			delete this->aiCars[i];
+			this->aiCars[i] = 0;
+		}
+	}
 	this->aiCars.erase(0, this->aiCars.size());
 }
 

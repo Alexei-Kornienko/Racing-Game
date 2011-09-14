@@ -15,10 +15,10 @@ public:
 	AI_Car(GameStateController * controller, Car * targetCar);
 	virtual ~AI_Car();
 
-	virtual void update(dFloat timeSpan);
+	void update(dFloat timeSpan);
 
 protected:
-
+	void carDestroyed();
 private:
 	Car * targetCar;
 };
