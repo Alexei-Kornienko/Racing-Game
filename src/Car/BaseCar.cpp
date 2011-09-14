@@ -39,39 +39,57 @@ float BaseCar::getTireMassLoad(const SuspensionTire & sTire)
 dVector BaseCar::applyTireFriction(SuspensionTire & sTire)
 {
     dMatrix localCoord = sTire.t->getLocalCoordinates();
-    dFloat frontSpeed = sTire.tireSpeed % localCoord.m_front;
     dVector friction(0,0,0,0);
-    if(dAbs(frontSpeed) > 0.01) {
-    	friction += localCoord.m_front.Scale(frontSpeed * 0.2);
-	} else if(dAbs(frontSpeed) > 0) {
-		friction += localCoord.m_front.Scale(frontSpeed * 0.9);
-	}
-    dFloat sideSpeed = this->speed % localCoord.m_right;
-    if(dAbs(sideSpeed) > 0.01) {
-    	friction += localCoord.m_right.Scale(sideSpeed * 0.5);
-	} else if(dAbs(sideSpeed) > 0) {
-		friction += localCoord.m_right.Scale(sideSpeed * 0.9);
-	}
-    return friction.Scale(1/this->getTiresCount());
+    dVector carForceSum = this->currentBodyForce + this->speed.Scale(this->getTireMassLoad(sTire));
+    dFloat frontForce = carForceSum % localCoord.m_front;
+
+    dFloat rollintFriction = 0.002/sTire.t->getRaduis() * sTire.tireLoad;
+    if(frontForce > 0) {
+    	friction -= localCoord.m_front.Scale(rollintFriction);
+    } else {
+    	friction += localCoord.m_front.Scale(rollintFriction);
+    }
+
+    dFloat sideForce = carForceSum % localCoord.m_right;
+    dFloat slideFriction = 0.5 * sTire.tireLoad * 80;
+    if(dAbs(sideForce) < dAbs(slideFriction)) {
+    	slideFriction = dAbs(sideForce);
+    }
+    if(dAbs(sideForce) > 0.01) {
+    	dVector sF = localCoord.m_right.Scale(slideFriction);
+		if(sideForce > 0) {
+			friction -= sF;
+		} else {
+			friction += sF;
+		}
+
+
+    }
+	//printf("Friction X:%f Y:%f Z:%f \n", friction.m_x,friction.m_y,friction.m_z);
+    return friction;//.Scale(1/this->getTiresCount());
 }
 
-void BaseCar::applyOmegaFriction()
+dVector BaseCar::applyOmegaFriction(SuspensionTire & sTire)
 {
-    dFloat turnAngle = this->getTire(0)->getTurnAngle();
+	dVector resultTorque(0,0,0,0);
+
     dFloat expectedAnglularSpeed = 0;
-    if(turnAngle != 0) {
-		dFloat turnRaduis = this->distanceBetweenFrontAndRearTire / sin(turnAngle * DEGTORAD);
+    if(sTire.t->getTurnAngle() != 0) {
+		dFloat turnRaduis = this->distanceBetweenFrontAndRearTire / sin(sTire.t->getTurnAngle() * DEGTORAD);
 		expectedAnglularSpeed = (this->speed % this->localCoordinates.m_front) / turnRaduis;
 	}
     dFloat actualAngularSpeed = this->angularSpeed % this->localCoordinates.m_up;
-    if(dAbs(actualAngularSpeed - expectedAnglularSpeed) > 0.1) {
-		if(actualAngularSpeed > 0.1) {
-			this->angularSpeed = this->angularSpeed.Scale(0.5);
+    dFloat speedDiff = actualAngularSpeed - expectedAnglularSpeed;
+    if(dAbs(speedDiff) > 0.1) {
+    	dFloat slideFriction = 0.5 * sTire.tireLoad;
+		if(speedDiff > 0) {
+			resultTorque -= this->localCoordinates.m_up.Scale(slideFriction);
 		} else {
-			this->angularSpeed = this->angularSpeed.Scale(0.1);
+			resultTorque += this->localCoordinates.m_up.Scale(slideFriction);
 		}
 
 	}
+    return resultTorque;
 }
 
 dVector BaseCar::applyTireForce(const Tire * t)
@@ -82,15 +100,15 @@ dVector BaseCar::applyTireForce(const Tire * t)
 dVector BaseCar::applyTireLoad(SuspensionTire & sTire, const TireRayCast * tireCast, const float timeSpan)
 {
     sTire.t->setSuspension(sTire.suspensionLenght * tireCast->getHitDistance());
-    dFloat tireLoad = NewtonCalculateSpringDamperAcceleration(
+    sTire.tireLoad = NewtonCalculateSpringDamperAcceleration(
 				timeSpan,
 				sTire.suspensionSpring,
 				-((1 - tireCast->getHitDistance()) / 2),
 				sTire.suspensionDamper,
 				sTire.tireSpeed % this->localCoordinates.m_up
 			);
-    tireLoad *= this->getTireMassLoad(sTire);
-    dVector tireForce = this->localCoordinates.m_up.Scale(tireLoad);
+    sTire.tireLoad *= this->getTireMassLoad(sTire);
+    dVector tireForce = this->localCoordinates.m_up.Scale(sTire.tireLoad);
     return tireForce;
 }
 
@@ -121,22 +139,27 @@ void BaseCar::update(const float timeSpan)
 	dVector resultForce(0,0,0,0);
 	dVector resultTorque(0,0,0,0);
 	for(int i=0, c=this->getTiresCount(); i < c; i++) {
+		dVector tireForce(0,0,0,0);
+		dVector tireTorque(0,0,0,0);
 		SuspensionTire sTire = this->tires[i];
 		sTire.tireSpeed = this->speed + this->angularSpeed * sTire.t->getLocalPos();
 		TireRayCast * tireCast = new TireRayCast(this, this->globalCoordinates, sTire.t, sTire.suspensionLenght);
 		tireCast->castRay();
 		if(tireCast->hasContact()) {
-			resultForce += this->applyTireLoad(sTire, tireCast, timeSpan);
-			resultForce += this->applyTireForce(sTire.t);
-			resultForce += this->applyTireFriction(sTire);
+			tireForce += this->applyTireLoad(sTire, tireCast, timeSpan);
+			tireForce += this->applyTireForce(sTire.t);
+			if(i==0) {
+				tireForce += this->applyTireFriction(sTire);
+			}
 
-//			dVector torque = tireForce * (this->massCenter - sTire.t->getLocalPos());
-			dVector torque(0,0,0,0);
+			tireTorque += tireForce * (this->massCenter - sTire.t->getLocalPos());
+			tireTorque += this->applyOmegaFriction(sTire);
 			if (dAbs(this->speed % this->localCoordinates.m_front)!=0.0f && sTire.t->getTurnAngle() != 0) {
 				dVector turnForce = this->localCoordinates.m_right.Scale(sTire.t->getTurnAngle()*20) * this->speed;
-				torque -= turnForce ;//* (this->massCenter - sTire.t->getLocalPos());
+				tireTorque -= turnForce ;//* (this->massCenter - sTire.t->getLocalPos());
 			}
-			resultTorque += torque;
+			resultForce += tireForce;
+			resultTorque += tireTorque;
 		} else {
 			sTire.t->setSuspension(sTire.suspensionLenght);
 		}
@@ -144,22 +167,20 @@ void BaseCar::update(const float timeSpan)
 
 		sTire.t->setTorque(0);
 	}
-	//this->applyOmegaFriction();
 
 	resultForce = this->globalCoordinates.RotateVector(resultForce);
 	resultTorque = this->globalCoordinates.RotateVector(resultTorque);
+	draw.vector = vector3df(resultForce.m_x, resultForce.m_y, resultForce.m_z);
+	draw.vector *= 0.01;
+	draw.color = SColor(0,0,255,0);
+	this->controller->addVectorDraw(draw);
 
 	resultForce += this->gravity;
 	NewtonBodySetForce(this->carBody, &resultForce[0]);
 	NewtonBodySetTorque(this->carBody, &resultTorque[0]);
 
 
-//	draw.vector = vector3df(resultForce.m_x, resultForce.m_y, resultForce.m_z);
-//	draw.color = SColor(0,0,255,0);
-//	this->controller->addVectorDraw(draw);
-//	draw.vector = vector3df(resultTorque.m_x, resultTorque.m_y, resultTorque.m_z);
-//	draw.color = SColor(0,255,0,0);
-//	this->controller->addVectorDraw(draw);
+
 }
 
 

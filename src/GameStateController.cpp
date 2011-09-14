@@ -260,10 +260,10 @@ void GameStateController::newGame()
 {
 	this->timer->setTime(0);
 	this->smgr->clear();
-	this->smgr->addLightSceneNode(0, vector3df(10,10,10), SColorf(1,1,1),200);
-	this->smgr->addLightSceneNode(0, vector3df(10,10,-10), SColorf(1,1,1),200);
-	this->smgr->addLightSceneNode(0, vector3df(-10,10,10), SColorf(1,1,1),200);
-	this->smgr->addLightSceneNode(0, vector3df(-10,10,-10), SColorf(1,1,1),200);
+	this->smgr->addLightSceneNode(0, vector3df(10,10,10), SColorf(1,1,1),10);
+	this->smgr->addLightSceneNode(0, vector3df(10,10,-10), SColorf(1,1,1),10);
+	this->smgr->addLightSceneNode(0, vector3df(-10,10,10), SColorf(1,1,1),10);
+	this->smgr->addLightSceneNode(0, vector3df(-10,10,-10), SColorf(1,1,1),10);
 	this->guienv->clear();
 
 	this->textField = this->guienv->addStaticText(0, recti(10,10,400,100), false, true);

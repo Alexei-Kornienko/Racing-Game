@@ -49,6 +49,7 @@ private:
         float suspensionSpring;
         float suspensionDamper;
         dVector tireSpeed;
+        dFloat tireLoad;
     } *tires;
     NewtonWorld *world;
     NewtonBody *carBody;
@@ -62,7 +63,7 @@ private:
     void getUpdatedGlobalState();
     dVector applyTireLoad(SuspensionTire & sTire, const TireRayCast * tireCast, const float timeSpan);
     dVector applyTireForce(const Tire * t);
-    void applyOmegaFriction();
+    dVector applyOmegaFriction(SuspensionTire & sTire);
     dVector applyTireFriction(SuspensionTire & sTire);
     float getTireMassLoad(const SuspensionTire & sTire);
 };
