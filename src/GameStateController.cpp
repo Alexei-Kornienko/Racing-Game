@@ -424,6 +424,7 @@ void GameStateController::aiDeath(Car *car)
 			delete this->aiCars[i];
 			this->aiCars[i] = 0;
 			this->aiCars.erase(i);
+			break;
 		}
 	}
 	if(this->aiCars.size() == 0) {
@@ -443,10 +444,9 @@ void GameStateController::createFloorBody(NewtonCollision *collision, IAnimatedM
 
 void GameStateController::mainMenu()
 {
+	this->releaseCars();
 	this->smgr->clear();
 	this->guienv->clear();
-
-	this->releaseCars();
 
 	dimension2du size = this->driver->getScreenSize();
 
@@ -495,12 +495,6 @@ IGUIStaticText *GameStateController::getTextField() const
 
 void GameStateController::releaseCars()
 {
-	if(this->nWorld) {
-		NewtonDestroyAllBodies(this->nWorld);
-		NewtonDestroy(this->nWorld);
-		this->nWorld = 0;
-	}
-
 	if(this->car) {
 		delete this->car;
 		this->car = 0;
@@ -512,7 +506,12 @@ void GameStateController::releaseCars()
 			this->aiCars[i] = 0;
 		}
 	}
-	this->aiCars.erase(0, this->aiCars.size());
+	this->aiCars.clear();
+	if(this->nWorld) {
+		NewtonDestroyAllBodies(this->nWorld);
+		NewtonDestroy(this->nWorld);
+		this->nWorld = 0;
+	}
 }
 
 

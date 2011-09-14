@@ -287,11 +287,13 @@ dMatrix Car::createChassisMatrix()
 
 Car::~Car()
 {
+	printf("Car destroyed\n");
 	NewtonBodySetForceAndTorqueCallback(this->getCarBody(), 0);
 	NewtonBodySetTransformCallback(this->getCarBody(), 0);
 	int matId = NewtonMaterialGetDefaultGroupID(this->controller->getWorld());
 	NewtonMaterialSetCollisionCallback(this->controller->getWorld(), matId, matId, 0, 0, 0);
 	NewtonDestroyBody(this->controller->getWorld(), this->getCarBody());
+//	this->carNode->remove();
 }
 
 int Car::getHelthPoints() const

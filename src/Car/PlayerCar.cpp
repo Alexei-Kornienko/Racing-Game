@@ -24,6 +24,7 @@ PlayerCar::PlayerCar(GameStateController *controller) : Car(controller)
 
 PlayerCar::~PlayerCar()
 {
+	printf("Player's Car destroyed\n");
 }
 
 void PlayerCar::update(dFloat timeSpan)

@@ -7,6 +7,7 @@ Newton Game Dynamics (2.29)
 http://newtondynamics.com/forum/downloads.php
 
 Include path:
+"${workspace_loc:/${ProjName}/src}"
 irrlicht/include
 newtonSDK/sdk
 newtonSDK/sdk/dMath
@@ -20,3 +21,5 @@ pthread
 Newton
 dMath
 dJointLibrary
+
+Developed with Eclipse Indigo CDT
