@@ -361,6 +361,7 @@ void GameStateController::newGame()
 	}
 
 	device->getCursorControl()->setVisible(false);
+	this->paused = false;
 }
 
 void GameStateController::addVectorDraw(VectorDraw draw)
@@ -370,7 +371,50 @@ void GameStateController::addVectorDraw(VectorDraw draw)
 
 void GameStateController::gameOver(bool win)
 {
-	this->pause();
+	this->paused = true;
+	if(this->car) {
+		// FIXME possible issue
+		((PlayerCar*)this->car)->getCamera()->setInputReceiverEnabled(false);
+	}
+	dimension2du size = this->driver->getScreenSize();
+	device->getCursorControl()->setVisible(true);
+	this->guienv->clear();
+
+	ITexture * texture;
+	if(win) {
+		texture = this->driver->getTexture("res/win.jpg");
+	} else {
+		texture = this->driver->getTexture("res/lose.jpg");
+	}
+
+	this->guienv->addImage(
+		texture,
+		position2di(size.Width * 0.2f, size.Height * 0.10f)
+	);
+
+	s32 left = size.Width * 0.2f;
+	s32 top = size.Height * 0.40f;
+	size.Width *= 0.6f;
+	size.Height *= 0.2f;
+	printf("Width : %d", size.Width);
+
+	position2di pos(left,top);
+
+	this->guienv->addButton(
+		rect<s32>(pos, size),
+		0,
+		MENU_NEW_GAME,
+		L"New Game",
+		L"Start a new game"
+	);
+	pos.Y += size.Height + (size.Height>>1);
+	this->guienv->addButton(
+		rect<int>(pos, size),
+		0,
+		PMENU_MAIN,
+		L"Main menu",
+		L"Return to main menu"
+	);
 }
 
 void GameStateController::aiDeath(Car *car)

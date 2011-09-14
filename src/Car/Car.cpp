@@ -9,8 +9,7 @@
 
 void applyCarMoveForce(const NewtonBody* body, dFloat timestep, int threadIndex) {
 	Car* car = (Car*) NewtonBodyGetUserData(body);
-	if (car)
-	{
+	if (car) {
 		car->update(timestep);
 	}
 }
@@ -143,10 +142,10 @@ void Car::initPhysics() {
 	NewtonBodySetCentreOfMass(body, &origin[0]);
 	NewtonBodySetForceAndTorqueCallback(body, applyCarMoveForce);
 	NewtonBodySetTransformCallback(body, applyCarTransform);
-
 	int matId = NewtonMaterialGetDefaultGroupID(nWorld);
 	NewtonMaterialSetCollisionCallback(nWorld, matId, matId, this, 0, applyCarCollisionForce);
 
+	NewtonReleaseCollision(nWorld, collision);
 	this->setCarBodyAndGravity(body, dVector(0,-10,0,0));
 	this->setLocalCoordinates(this->createChassisMatrix());
 }
@@ -288,6 +287,11 @@ dMatrix Car::createChassisMatrix()
 
 Car::~Car()
 {
+	NewtonBodySetForceAndTorqueCallback(this->getCarBody(), 0);
+	NewtonBodySetTransformCallback(this->getCarBody(), 0);
+	int matId = NewtonMaterialGetDefaultGroupID(this->controller->getWorld());
+	NewtonMaterialSetCollisionCallback(this->controller->getWorld(), matId, matId, 0, 0, 0);
+	NewtonDestroyBody(this->controller->getWorld(), this->getCarBody());
 }
 
 int Car::getHelthPoints() const
