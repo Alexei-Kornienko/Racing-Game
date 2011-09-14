@@ -22,7 +22,6 @@ BaseCar::BaseCar(int tiresCount, NewtonWorld * world, GameStateController * cont
 
 BaseCar::~BaseCar()
 {
-	printf("Base Car destroyed\n");
 	for(int i=0; i < this->getTiresCount(); i++) {
 		delete this->getTire(i);
 	}

@@ -396,7 +396,6 @@ void GameStateController::gameOver(bool win)
 	s32 top = size.Height * 0.40f;
 	size.Width *= 0.6f;
 	size.Height *= 0.2f;
-	printf("Width : %d", size.Width);
 
 	position2di pos(left,top);
 

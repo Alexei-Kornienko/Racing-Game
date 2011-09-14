@@ -287,7 +287,6 @@ dMatrix Car::createChassisMatrix()
 
 Car::~Car()
 {
-	printf("Car destroyed\n");
 	NewtonBodySetForceAndTorqueCallback(this->getCarBody(), 0);
 	NewtonBodySetTransformCallback(this->getCarBody(), 0);
 	int matId = NewtonMaterialGetDefaultGroupID(this->controller->getWorld());

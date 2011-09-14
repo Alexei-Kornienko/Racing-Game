@@ -18,7 +18,6 @@ AI_Car::AI_Car(GameStateController * controller, Car * targetCar) : Car(controll
 
 AI_Car::~AI_Car()
 {
-	printf("AI Car destroyed\n");
 }
 
 void AI_Car::update(dFloat timeSpan)
