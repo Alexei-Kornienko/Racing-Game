@@ -148,7 +148,7 @@ void BaseCar::update(const float timeSpan)
 			tireTorque += this->applyOmegaFriction(sTire);
 			if (dAbs(this->speed % this->localCoordinates.m_front)!=0.0f && sTire.t->getTurnAngle() != 0) {
 				dVector turnForce = this->localCoordinates.m_right.Scale(sTire.t->getTurnAngle()*20) * this->speed;
-				tireTorque -= turnForce ;//* (this->massCenter - sTire.t->getLocalPos());
+				tireTorque -= turnForce;
 			}
 			resultForce += tireForce;
 			resultTorque += tireTorque;
@@ -162,17 +162,9 @@ void BaseCar::update(const float timeSpan)
 
 	resultForce = this->globalCoordinates.RotateVector(resultForce);
 	resultTorque = this->globalCoordinates.RotateVector(resultTorque);
-	draw.vector = vector3df(resultForce.m_x, resultForce.m_y, resultForce.m_z);
-	draw.vector *= 0.01;
-	draw.color = SColor(0,0,255,0);
-	this->controller->addVectorDraw(draw);
-
 	resultForce += this->gravity;
 	NewtonBodySetForce(this->carBody, &resultForce[0]);
 	NewtonBodySetTorque(this->carBody, &resultTorque[0]);
-
-
-
 }
 
 
