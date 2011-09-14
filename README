@@ -11,7 +11,6 @@ Include path:
 irrlicht/include
 newtonSDK/sdk
 newtonSDK/sdk/dMath
-newtonSDK/sdk/dCustomJoints
 
 Libs:
 Irrlicht
@@ -20,6 +19,5 @@ GLU
 pthread
 Newton
 dMath
-dJointLibrary
 
 Developed with Eclipse Indigo CDT
