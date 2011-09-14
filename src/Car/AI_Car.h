@@ -12,7 +12,7 @@
 
 class AI_Car : public Car {
 public:
-	AI_Car(GameStateController * controller, Car * targetCar);
+	AI_Car(GameController * controller, Car * targetCar);
 	virtual ~AI_Car();
 
 	void update(dFloat timeSpan);

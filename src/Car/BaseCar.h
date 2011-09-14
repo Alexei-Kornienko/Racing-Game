@@ -15,11 +15,11 @@
 
 
 class TireRayCast;
-class GameStateController;
+class GameController;
 
 class BaseCar {
 public:
-	BaseCar(int tiresCount, NewtonWorld * world, GameStateController * controller);
+	BaseCar(int tiresCount, NewtonWorld * world, GameController * controller);
 	virtual ~BaseCar();
 
 	virtual void update(const float timeSpan);
@@ -35,7 +35,7 @@ public:
 protected:
     void setCarBodyAndGravity(NewtonBody *carBody, const dVector & gravity);
 private:
-    GameStateController * controller;
+    GameController * controller;
     dVector speed;
     dVector angularSpeed;
     dVector massCenter;

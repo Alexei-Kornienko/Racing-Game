@@ -8,7 +8,7 @@
 #include "AI_Car.h"
 #include "math.h"
 
-AI_Car::AI_Car(GameStateController * controller, Car * targetCar) : Car(controller)
+AI_Car::AI_Car(GameController * controller, Car * targetCar) : Car(controller)
 {
 	this->targetCar = targetCar;
 	vector3df position((rand()%20) - 10, 0, (rand()%20) - 10);

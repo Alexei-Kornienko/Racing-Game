@@ -16,7 +16,7 @@
 #define WHEELS_COUNT 4
 
 class BaseCar;
-class GameStateController;
+class GameController;
 
 
 void applyCarMoveForce(const NewtonBody* body, dFloat timestep, int threadIndex);
@@ -28,7 +28,7 @@ friend void applyCarMoveForce(const NewtonBody* body, float timestep, int thread
 friend void applyCarTransform(const NewtonBody *body, const float *matrix, int threadIndex);
 friend void applyCarCollisionForce(const NewtonJoint* contact, float timestep, int threadIndex);
 public:
-    Car(GameStateController *controller);
+    Car(GameController *controller);
     virtual ~Car();
     virtual void update(float timeSpan);
     int getHelthPoints() const;
@@ -39,7 +39,7 @@ public:
     vector3df getSpeed() const;
 
 protected:
-    GameStateController *controller;
+    GameController *controller;
     IAnimatedMeshSceneNode *carNode;
     IAnimatedMeshSceneNode *wheels[WHEELS_COUNT];
 

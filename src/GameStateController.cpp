@@ -9,7 +9,7 @@
 #include "Car/PlayerCar.h"
 #include "Car/AI_Car.h"
 
-bool GameStateController::OnEvent(const SEvent & event)
+bool GameController::OnEvent(const SEvent & event)
 {
     if (event.EventType == irr::EET_KEY_INPUT_EVENT) {
 		this->keysDown[event.KeyInput.Key] = event.KeyInput.PressedDown;
@@ -43,22 +43,17 @@ bool GameStateController::OnEvent(const SEvent & event)
 		}
 		return true;
 	}
-	u32 size = this->eventReceivers.size();
-	bool result = false;
-	for(u32 i=0; i<size && !result; i++) {
-		result = this->eventReceivers[i]->OnEvent(event);
-	}
 
 	return false;
 }
 
 // This is used to check whether a key is being held down
-bool GameStateController::isKeyDown(EKEY_CODE keyCode) const
+bool GameController::isKeyDown(EKEY_CODE keyCode) const
 {
 		return this->keysDown[keyCode];
 }
 
-void GameStateController::exit()
+void GameController::exit()
 {
 	if(!this->timer->isStopped()) {
 		this->timer->stop();
@@ -68,7 +63,7 @@ void GameStateController::exit()
 
 
 
-GameStateController::GameStateController()
+GameController::GameController(IrrlichtDevice *device)
 {
 	this->device = 0;
 	this->driver = 0;
@@ -87,11 +82,13 @@ GameStateController::GameStateController()
 
 	for (u32 i = 0; i < KEY_KEY_CODES_COUNT; ++i)
 		this->keysDown[i] = false;
+
+	this->init(device);
 }
 
 
 
-void GameStateController::pause()
+void GameController::pause()
 {
 	dimension2du size = this->driver->getScreenSize();
 
@@ -108,7 +105,6 @@ void GameStateController::pause()
 		}
 
 		this->guienv->clear();
-		this->textField = this->guienv->addStaticText(0, recti(10,10,400,100), false, true);
 	} else { // Pause (show pause menu)
 		this->paused = true;
 		if(this->car) {
@@ -149,14 +145,14 @@ void GameStateController::pause()
 
 
 
-GameStateController::~GameStateController()
+GameController::~GameController()
 {
 	this->releaseCars();
 }
 
 
 
-void GameStateController::init(IrrlichtDevice *device)
+void GameController::init(IrrlichtDevice *device)
 {
 	this->device = device;
 	this->driver = device->getVideoDriver();
@@ -175,36 +171,17 @@ void GameStateController::init(IrrlichtDevice *device)
 
 
 
-ISceneManager *GameStateController::getSmgr() const
+ISceneManager *GameController::getSmgr() const
 {
     return smgr;
 }
 
-bool GameStateController::addEventReceiver(IEventReceiver * receiver)
-{
-	if(this->eventReceivers.binary_search(receiver) == -1) {
-		this->eventReceivers.push_back(receiver);
-		return true;
-	}
-	return false;
-}
-
-bool GameStateController::removeEventReceiver(IEventReceiver * receiver)
-{
-	s32 index = this->eventReceivers.binary_search(receiver);
-	if(index != -1) {
-		this->eventReceivers.erase(index);
-		return true;
-	}
-	return false;
-}
-
-void GameStateController::setSmgr(ISceneManager *smgr)
+void GameController::setSmgr(ISceneManager *smgr)
 {
     this->smgr = smgr;
 }
 
-void GameStateController::update(u32 timeSpan)
+void GameController::update(u32 timeSpan)
 {
 	if(this->paused) {
 		return;
@@ -217,26 +194,16 @@ void GameStateController::update(u32 timeSpan)
 
 
 
-void GameStateController::mainLoop()
+void GameController::mainLoop()
 {
 	this->timer->start();
 	while(this->device->run()) {
 		u32 timeSpan = this->timer->getTime() - this->lastUpdate;
 
-		this->device->sleep(20);
+		this->device->sleep(20); // FIXME
 
 		this->driver->beginScene(true, true, SColor(255,100,101,140));
 		this->smgr->drawAll();
-
-		for(int i=0, c=this->vectors.size(); i<c; i++) {
-			this->driver->draw3DLine(
-				vector3df(0,0,0),
-				this->vectors[i].vector,
-				this->vectors[i].color
-			);
-		}
-		this->vectors.clear();
-
 		this->guienv->drawAll();
 		this->driver->endScene();
 
@@ -256,7 +223,7 @@ void GameStateController::mainLoop()
 
 
 
-void GameStateController::newGame()
+void GameController::newGame()
 {
 	this->timer->setTime(0);
 	this->smgr->clear();
@@ -265,8 +232,6 @@ void GameStateController::newGame()
 	this->smgr->addLightSceneNode(0, vector3df(-10,10,10), SColorf(1,1,1),10);
 	this->smgr->addLightSceneNode(0, vector3df(-10,10,-10), SColorf(1,1,1),10);
 	this->guienv->clear();
-
-	this->textField = this->guienv->addStaticText(0, recti(10,10,400,100), false, true);
 
 	device->getCursorControl()->setVisible(false);
 
@@ -364,12 +329,7 @@ void GameStateController::newGame()
 	this->paused = false;
 }
 
-void GameStateController::addVectorDraw(VectorDraw draw)
-{
-	this->vectors.push_back(draw);
-}
-
-void GameStateController::gameOver(bool win)
+void GameController::gameOver(bool win)
 {
 	this->paused = true;
 	if(this->car) {
@@ -416,7 +376,7 @@ void GameStateController::gameOver(bool win)
 	);
 }
 
-void GameStateController::aiDeath(Car *car)
+void GameController::aiDeath(Car *car)
 {
 	for(int i=0, c=this->aiCars.size(); i<c; i++) {
 		if(car == this->aiCars[i]) {
@@ -431,7 +391,7 @@ void GameStateController::aiDeath(Car *car)
 	}
 }
 
-void GameStateController::createFloorBody(NewtonCollision *collision, IAnimatedMeshSceneNode *floorNode, dVector origin)
+void GameController::createFloorBody(NewtonCollision *collision, IAnimatedMeshSceneNode *floorNode, dVector origin)
 {
     NewtonBody *floorBody = NewtonCreateBody(nWorld, collision, floorNode->getRelativeTransformation().pointer());
     NewtonBodySetUserData(floorBody, 0);
@@ -441,7 +401,7 @@ void GameStateController::createFloorBody(NewtonCollision *collision, IAnimatedM
     NewtonBodySetCentreOfMass(floorBody, &origin[0]);
 }
 
-void GameStateController::mainMenu()
+void GameController::mainMenu()
 {
 	this->releaseCars();
 	this->smgr->clear();
@@ -482,17 +442,12 @@ void GameStateController::mainMenu()
 	);
 }
 
-NewtonWorld *GameStateController::getWorld() const
+NewtonWorld *GameController::getWorld() const
 {
     return nWorld;
 }
 
-IGUIStaticText *GameStateController::getTextField() const
-{
-	return this->textField;
-}
-
-void GameStateController::releaseCars()
+void GameController::releaseCars()
 {
 	if(this->car) {
 		delete this->car;

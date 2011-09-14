@@ -7,7 +7,7 @@
 
 #include "PlayerCar.h"
 
-PlayerCar::PlayerCar(GameStateController *controller) : Car(controller)
+PlayerCar::PlayerCar(GameController *controller) : Car(controller)
 {
 	// add camera
 //	this->camera = this->controller->getSmgr()->addCameraSceneNode(

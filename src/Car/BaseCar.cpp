@@ -8,7 +8,7 @@
 #include "BaseCar.h"
 
 
-BaseCar::BaseCar(int tiresCount, NewtonWorld * world, GameStateController * controller)
+BaseCar::BaseCar(int tiresCount, NewtonWorld * world, GameController * controller)
 {
 	this->tiresCount = tiresCount;
 	this->tiresC = 0;
@@ -127,7 +127,7 @@ void BaseCar::getUpdatedGlobalState()
 
 void BaseCar::update(const float timeSpan)
 {
-	GameStateController::VectorDraw draw;
+	GameController::VectorDraw draw;
 
     this->getUpdatedGlobalState();
 

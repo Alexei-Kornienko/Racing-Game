@@ -10,10 +10,10 @@
 
 #include "Car.h"
 
-class GameStateController;
+class GameController;
 class PlayerCar : public Car {
 public:
-	PlayerCar(GameStateController * controller);
+	PlayerCar(GameController * controller);
 	virtual ~PlayerCar();
 	void update(dFloat timeSpan);
 

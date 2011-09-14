@@ -18,13 +18,12 @@
 #define PMENU_MAIN 5
 
 #include "racingGame.h"
-//#include "Car/Car.h"
 
 class Car;
-class GameStateController : public IEventReceiver {
+class GameController : public IEventReceiver {
 public:
-	GameStateController();
-	virtual ~GameStateController();
+	GameController(IrrlichtDevice *device);
+	virtual ~GameController();
 
 	void init(IrrlichtDevice * device);
 
@@ -32,13 +31,8 @@ public:
 		vector3df vector;
 		SColor color;
 	};
-	void addVectorDraw(VectorDraw draw);
-
-
 	void mainLoop();
 
-	bool addEventReceiver(IEventReceiver * receiver);
-	bool removeEventReceiver(IEventReceiver * receiver);
 	bool OnEvent(const SEvent& event);
 	bool isKeyDown(EKEY_CODE keyCode) const;
 	// Game states
@@ -47,10 +41,10 @@ public:
 	void pause();
 	void exit();
 	void gameOver(bool win);
+
 	void aiDeath(Car * car);
     ISceneManager *getSmgr() const;
     NewtonWorld *getWorld() const;
-    IGUIStaticText * getTextField() const;
 
 protected:
 	u32 lastUpdate;
@@ -63,15 +57,11 @@ private:
 	IVideoDriver * driver;
 	ISceneManager * smgr;
 	IGUIEnvironment * guienv;
-	IGUIStaticText * textField;
 	void releaseCars();
     void createFloorBody(NewtonCollision *collision, IAnimatedMeshSceneNode *floorNode, dVector origin);
 
 	ITimer * timer;
 	bool paused;
-
-	core::array<IEventReceiver*> eventReceivers;
-	core::array<VectorDraw> vectors;
 
 	NewtonWorld * nWorld;
 	Car * car;

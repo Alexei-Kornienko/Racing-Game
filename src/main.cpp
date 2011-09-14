@@ -7,10 +7,9 @@
 
 #include "racingGame.h"
 #include "GameStateController.h"
-IrrlichtDevice * device;
 
-int initWindow(video::E_DRIVER_TYPE type) {
-	device = createDevice(
+IrrlichtDevice * initWindow(video::E_DRIVER_TYPE type) {
+	IrrlichtDevice * device = createDevice(
 		type,
 		dimension2d<u32>(800, 600),
 		16,
@@ -22,24 +21,22 @@ int initWindow(video::E_DRIVER_TYPE type) {
 
 	if (!device) {
 		printf("Failed to create device");
-		return 1;
+		return 0;
 	}
 
 	device->setWindowCaption(L"Flatout :)");
 
-	return 0;
+	return device;
 }
 
 int main() {
 	video::E_DRIVER_TYPE type = video::EDT_SOFTWARE;
-	if(initWindow(type)) {
+	IrrlichtDevice * device = initWindow(type);
+	if(!device) {
 		return 1;
 	}
 
-	GameStateController controller;
-
-	controller.init(device);
-
+	GameController controller(device);
 	controller.mainMenu();
 	controller.mainLoop();
 

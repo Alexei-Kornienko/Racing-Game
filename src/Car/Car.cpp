@@ -50,7 +50,7 @@ void applyCarCollisionForce(const NewtonJoint* contact, dFloat timestep, int thr
 
 
 
-Car::Car(GameStateController * controller) : BaseCar(WHEELS_COUNT, controller->getWorld(), controller)
+Car::Car(GameController * controller) : BaseCar(WHEELS_COUNT, controller->getWorld(), controller)
 {
 	this->controller = controller;
 	this->initModels(this->controller->getSmgr());
