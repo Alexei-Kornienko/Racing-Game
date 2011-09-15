@@ -51,8 +51,8 @@ AC_CHECK_LIB(
 )
 
 # Checks for header files.
-CXXFLAGS+=" -Isrc"
-CPPFLAGS+=" -Isrc"
+CXXFLAGS+=" -I$srcdir/src"
+CPPFLAGS+=" -I$srcdir/src"
 AC_ARG_WITH([irrlicht-include],AS_HELP_STRING([--with-irrlicht-include	path to irrliht headers]),
 	[CXXFLAGS+=" -I$withval"; CPPFLAGS+=" -I$withval" ]
 )

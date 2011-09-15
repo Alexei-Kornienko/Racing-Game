@@ -9,7 +9,7 @@
 #define TIRERAYCAST_H_
 
 #include "racingGame.h"
-#include "Car/BaseCar.h"
+#include "BaseCar.h"
 
 class BaseCar;
 

@@ -11,7 +11,7 @@
 #include "racingGame.h"
 //#include "GameStateController.h"
 
-#include "Car/BaseCar.h"
+#include "BaseCar.h"
 
 #define WHEELS_COUNT 4
 

@@ -6,8 +6,8 @@
  */
 
 #include "GameStateController.h"
-#include "Car/PlayerCar.h"
-#include "Car/AI_Car.h"
+#include "PlayerCar.h"
+#include "AI_Car.h"
 
 bool GameController::OnEvent(const SEvent & event)
 {

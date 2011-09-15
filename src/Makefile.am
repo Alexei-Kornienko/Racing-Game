@@ -4,15 +4,15 @@ AM_CFLAGS = -O3 -g -Wall -c -fmessage-length=0
 # LDFLAGS =
 #
 # # this lists the binaries to produce, the (non-PHONY, binary) targets in
-build_PROGRAMS = RacingGame
+myexecdir = $(abs_top_builddir)/@PACKAGE@
+myexec_PROGRAMS = RacingGame
 RacingGame_SOURCES = \
 		main.cpp \
-		GameStateController.cpp
-BUILT_SOURCES = \
-		Car/AI_Car.cpp \
-		Car/BaseCar.cpp \
-		Car/Car.cpp \
-		Car/PlayerCar.cpp \
-		Car/Utility/Tire.cpp \
-		Car/Utility/TireRayCast.cpp
+		GameStateController.cpp \
+		AI_Car.cpp \
+		BaseCar.cpp \
+		Car.cpp \
+		PlayerCar.cpp \
+		Tire.cpp \
+		TireRayCast.cpp
 

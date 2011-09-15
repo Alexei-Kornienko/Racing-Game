@@ -1,4 +1,3 @@
 AUTOMAKE_OPTIONS = foreign
+builddir = "$(pwd)"
 SUBDIRS = src res
-
-builddir = ./build/@PACKAGE@

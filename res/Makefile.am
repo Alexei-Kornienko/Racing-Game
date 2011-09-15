@@ -1,4 +1,5 @@
-resdir = $(builddir)/res
+resdir = $(abs_top_builddir)/@PACKAGE@/res
+
 res_DATA = \
 		carC.mtl \
 		carC.obj \

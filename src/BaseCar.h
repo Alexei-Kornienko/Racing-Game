@@ -9,8 +9,8 @@
 #define BASECAR_H_
 
 #include "racingGame.h"
-#include "Utility/Tire.h"
-#include "Utility/TireRayCast.h"
+#include "Tire.h"
+#include "TireRayCast.h"
 #include "GameStateController.h"
 
 class TireRayCast;

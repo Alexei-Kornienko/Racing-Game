@@ -3594,8 +3594,8 @@ fi
 
 
 # Checks for header files.
-CXXFLAGS+=" -Isrc"
-CPPFLAGS+=" -Isrc"
+CXXFLAGS+=" -I$srcdir/src"
+CPPFLAGS+=" -I$srcdir/src"
 
 # Check whether --with-irrlicht-include was given.
 if test "${with_irrlicht_include+set}" = set; then :
