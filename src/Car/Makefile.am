@@ -5,5 +5,7 @@ AM_CFLAGS = -O3 -g -Wall -c -fmessage-length=0
 # # this lists the binaries to produce, the (non-PHONY, binary) targets in
 build_PROGRAMS = RacingGame
 RacingGame_SOURCES = \
-		main.cpp \
-		GameStateController.cpp
+		AI_Car.cpp \
+		BaseCar.cpp \
+		Car.cpp \
+		PlayerCar.cpp
