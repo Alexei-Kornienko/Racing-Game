@@ -28,6 +28,14 @@ AC_CHECK_LIB(
 	AC_MSG_ERROR([Missing Irrlicht lib. Try option --with-irrlicht-lib])
 )
 
+LDFLAGS+=" -lpthread"
+AC_CHECK_LIB(
+	[pthread], 
+	[pthread_create],
+   	[],
+	AC_MSG_ERROR([Missing Pthreads lib])
+)
+
 LDFLAGS+=" -lNewton"
 AC_ARG_WITH([newton-lib],AS_HELP_STRING([--with-newton-lib	path to Newton lib file]),
 	[LDFLAGS+=" -L$withval"]
