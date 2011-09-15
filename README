@@ -21,3 +21,11 @@ Newton
 dMath
 
 Developed with Eclipse Indigo CDT
+
+Build example:
+./configure \
+--with-irrlicht-include=/home/alex/Projects/irrlicht-1.7.2/include \
+--with-newton-include=/home/alex/Projects/newtonSDK/sdk \
+--with-dmath-include=/home/alex/Projects/newtonSDK/sdk/dMath/ \
+--with-irrlicht-lib=/home/alex/Projects/irrlicht-1.7.2/lib/Linux \
+--with-dmath-lib=/home/alex/Projects/newtonSDK/sdk/

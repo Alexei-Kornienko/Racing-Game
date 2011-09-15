@@ -1,10 +1,46 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Define to 1 if you have the <dMathDefines.h> header file. */
+#undef HAVE_DMATHDEFINES_H
+
+/* Define to 1 if you have the <dMatrix.h> header file. */
+#undef HAVE_DMATRIX_H
+
+/* Define to 1 if you have the <dQuaternion.h> header file. */
+#undef HAVE_DQUATERNION_H
+
+/* Define to 1 if you have the <dVector.h> header file. */
+#undef HAVE_DVECTOR_H
+
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
+/* Define to 1 if you have the <irrlicht.h> header file. */
+#undef HAVE_IRRLICHT_H
+
+/* Define to 1 if you have the `dMath' library (-ldMath). */
+#undef HAVE_LIBDMATH
+
+/* Define to 1 if you have the `GL' library (-lGL). */
+#undef HAVE_LIBGL
+
+/* Define to 1 if you have the `GLU' library (-lGLU). */
+#undef HAVE_LIBGLU
+
+/* Define to 1 if you have the `Irrlicht' library (-lIrrlicht). */
+#undef HAVE_LIBIRRLICHT
+
+/* Define to 1 if you have the `Newton' library (-lNewton). */
+#undef HAVE_LIBNEWTON
+
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
+
+/* Define to 1 if you have the <Newton.h> header file. */
+#undef HAVE_NEWTON_H
+
+/* Define to 1 if you have the <racingGame.h> header file. */
+#undef HAVE_RACINGGAME_H
 
 /* Define to 1 if stdbool.h conforms to C99. */
 #undef HAVE_STDBOOL_H

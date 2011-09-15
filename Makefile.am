@@ -1,4 +1,4 @@
 AUTOMAKE_OPTIONS = foreign
-SUBDIRS = src src/Car src/Car/Utility res
+SUBDIRS = src res
 
 builddir = ./build/@PACKAGE@
