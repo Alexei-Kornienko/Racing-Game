@@ -22,6 +22,25 @@ dMath
 
 Developed with Eclipse Indigo CDT
 
-Build example:
-../configure --with-irrlicht-include=/home/alex/Programs/irrlicht-1.7.2/include --with-newton-include=/home/alex/Programs/newtonSDK/sdk --with-dmath-include=/home/alex/Programs/newtonSDK/sdk/dMath/ --with-irrlicht-lib=/home/alex/Programs/irrlicht-1.7.2/lib/Linux --with-dmath-lib=/home/alex/Programs/newtonSDK/sdk
+=BUILD
+You can try to build the project with usual GNU way
+but you'll have to specify all dependencies.
 
+Build example:
+Type the following commands in console, 
+please replace /home/alex/Programs/ with correct path in your system
+
+mkdir build
+cd build
+../configure \
+--with-irrlicht-include=/home/alex/Programs/irrlicht-1.7.2/include \
+--with-irrlicht-lib=/home/alex/Programs/irrlicht-1.7.2/lib/Linux \
+--with-newton-include=/home/alex/Programs/newtonSDK/sdk \
+--with-dmath-include=/home/alex/Programs/newtonSDK/sdk/dMath \
+--with-dmath-lib=/home/alex/Programs/newtonSDK/sdk
+make
+make install
+
+If everything goes right you'll have RacingGame folder inside your build directory
+you can try to run the game now :)
+RacingGame/RacingGame
