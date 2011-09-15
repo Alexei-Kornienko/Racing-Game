@@ -23,14 +23,11 @@ IrrlichtDevice * initWindow(video::E_DRIVER_TYPE type) {
 		printf("Failed to create device");
 		return 0;
 	}
-
-	device->setWindowCaption(L"Flatout :)");
-
 	return device;
 }
 
 int main() {
-	video::E_DRIVER_TYPE type = video::EDT_SOFTWARE;
+	video::E_DRIVER_TYPE type = video::EDT_OPENGL;
 	IrrlichtDevice * device = initWindow(type);
 	if(!device) {
 		return 1;
