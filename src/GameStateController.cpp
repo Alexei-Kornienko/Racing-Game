@@ -265,6 +265,9 @@ void GameController::createGameLevel()
 
 void GameController::newGame()
 {
+	if(this->car) {
+		this->releaseCars();
+	}
 	this->clearScene();
 
 	this->timer->setTime(0);
@@ -286,7 +289,6 @@ void GameController::newGame()
 	);
 
 	this->nWorld = NewtonCreate();
-
 	// set a fixed world size
 	dVector minSize (-500.0f, -10.f, -500.0f);
 	dVector maxSize ( 500.0f,  30.0f,  500.0f);
@@ -298,7 +300,6 @@ void GameController::newGame()
 
 	NewtonSetFrictionModel(this->nWorld, 1);
     this->createGameLevel(); // TODO create normal level
-
 	this->car = new PlayerCar(this);
 	for(u32 i =0; i<AI_COUNT; i++) {
 		this->aiCars.push_back(new AI_Car(this, this->car));
@@ -315,6 +316,7 @@ void GameController::gameOver(bool win)
 		// FIXME possible issue
 		((PlayerCar*)this->car)->getCamera()->setInputReceiverEnabled(false);
 	}
+//	this->releaseCars();
 	dimension2du size = this->driver->getScreenSize();
 	device->getCursorControl()->setVisible(true);
 	this->guienv->clear();
@@ -433,6 +435,9 @@ NewtonWorld *GameController::getWorld() const
 
 void GameController::releaseCars()
 {
+	if(this->nWorld) {
+		NewtonWorldCriticalSectionLock(this->nWorld);
+	}
 	if(this->car) {
 		delete this->car;
 		this->car = 0;
@@ -447,6 +452,7 @@ void GameController::releaseCars()
 	this->aiCars.clear();
 	if(this->nWorld) {
 		NewtonDestroyAllBodies(this->nWorld);
+		NewtonWorldCriticalSectionUnlock(this->nWorld);
 		NewtonDestroy(this->nWorld);
 		this->nWorld = 0;
 	}

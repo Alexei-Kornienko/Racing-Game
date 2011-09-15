@@ -40,9 +40,11 @@ void applyCarCollisionForce(const NewtonJoint* contact, dFloat timestep, int thr
 			NewtonContactGetMaterial(carContact)
 		);
 		collisionSpeed = dAbs(collisionSpeed);
+
 		if(collisionSpeed > 3) {
 			car1->applyDamagePoints(collisionSpeed);
 			car2->applyDamagePoints(collisionSpeed);
+			break;
 		}
 		carContact = (NewtonJoint *) NewtonContactJointGetNextContact(contact, carContact);
 	} while(carContact);
@@ -187,8 +189,9 @@ vector3df Car::getSpeed() const
 void Car::applyDamagePoints(int helthPoints)
 {
     this->helthPoints -= helthPoints;
+    printf("Car HP: %d\n", this->helthPoints);
     if(this->helthPoints < 0) {
-
+    	this->carDestroyed();
     } else if(this->helthPoints < 50 && !this->damaged) {
     	this->carNode->setMesh(this->carMeshDamaged);
     }
@@ -210,6 +213,7 @@ void Car::update(dFloat timeSpan)
 {
 	if(this->getPosition().Y < -5) {
 		this->carDestroyed();
+		return;
 	}
 	BaseCar::update(timeSpan);
     this->updateWheelsPos();
@@ -288,10 +292,9 @@ Car::~Car()
 {
 	NewtonBodySetForceAndTorqueCallback(this->getCarBody(), 0);
 	NewtonBodySetTransformCallback(this->getCarBody(), 0);
-	int matId = NewtonMaterialGetDefaultGroupID(this->controller->getWorld());
-	NewtonMaterialSetCollisionCallback(this->controller->getWorld(), matId, matId, 0, 0, 0);
+	NewtonBodySetUserData(this->getCarBody(), 0);
 	NewtonDestroyBody(this->controller->getWorld(), this->getCarBody());
-//	this->carNode->remove();
+	this->carNode->remove();
 }
 
 int Car::getHelthPoints() const
