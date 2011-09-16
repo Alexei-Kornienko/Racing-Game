@@ -120,6 +120,16 @@ void BaseCar::getUpdatedGlobalState()
     this->currentBodyTorque = this->globalCoordinates.UnrotateVector(this->currentBodyTorque);
 }
 
+void BaseCar::updateTireSpin(SuspensionTire & sTire, const float timeSpan)
+{
+    sTire.t->setAngularSpeed(sTire.tireSpeed % sTire.t->getLocalCoordinates().m_front / sTire.t->getRaduis());
+    dFloat spinAngle = dMod(
+				sTire.t->getSpinAngle() + sTire.t->getAngularSpeed() * timeSpan,
+				M_PI * 2
+			);
+    sTire.t->setSpinAngle(spinAngle);
+}
+
 void BaseCar::update(const dFloat timeSpan)
 {
     this->getUpdatedGlobalState();
@@ -145,6 +155,7 @@ void BaseCar::update(const dFloat timeSpan)
 			}
 			resultForce += tireForce;
 			resultTorque += tireTorque;
+			this->updateTireSpin(sTire, timeSpan);
 		} else {
 			sTire.t->setSuspension(sTire.suspensionLenght);
 		}

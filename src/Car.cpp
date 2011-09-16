@@ -205,6 +205,7 @@ void Car::updateWheelsPos()
 		this->wheels[i]->setPosition(pos);
 		vector3df rot = this->wheels[i]->getRotation();
 		rot.Y = this->getTire(i)->getTurnAngle();
+		rot.X = this->getTire(i)->getSpinAngle() * RADTODEG;
 		this->wheels[i]->setRotation(rot);
 	}
 }

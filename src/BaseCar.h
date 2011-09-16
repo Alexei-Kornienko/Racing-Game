@@ -21,10 +21,8 @@ public:
 	BaseCar(int tiresCount, NewtonWorld * world, GameController * controller);
 	virtual ~BaseCar();
 
-	virtual void update(const dFloat timeSpan);
-
-	void addSuspensionTire(Tire *t, const dFloat suspensionLenght, const dFloat suspensionSpring, const dFloat suspensionDamper);
-
+	virtual void update(const float timeSpan);
+    void addSuspensionTire(Tire *t, const float suspensionLenght, const float suspensionSpring, const float suspensionDamper);
     dVector getSpeed() const;
     int getTiresCount() const;
     Tire *getTire(const int index) const;
@@ -32,41 +30,40 @@ public:
     NewtonWorld *getWorld() const;
     dMatrix getLocalCoordinates() const;
     void setLocalCoordinates(dMatrix localCoordinates);
-
 protected:
     void setCarBodyAndGravity(NewtonBody *carBody, const dVector & gravity);
 private:
-    GameController * controller;
+    GameController *controller;
     dVector speed;
     dVector angularSpeed;
     dVector massCenter;
     int tiresCount;
     int tiresC;
-    dFloat distanceBetweenFrontAndRearTire;
+    float distanceBetweenFrontAndRearTire;
     struct SuspensionTire
     {
         Tire *t;
-        dFloat suspensionLenght;
-        dFloat suspensionSpring;
-        dFloat suspensionDamper;
+        float suspensionLenght;
+        float suspensionSpring;
+        float suspensionDamper;
         dVector tireSpeed;
-        dFloat tireLoad;
+        float tireLoad;
     } *tires;
     NewtonWorld *world;
     NewtonBody *carBody;
-    dFloat mass;
+    float mass;
     dVector gravity;
     dMatrix localCoordinates;
     dMatrix globalCoordinates;
     dVector currentBodyForce;
     dVector currentBodyTorque;
-
+    void updateTireSpin(SuspensionTire & sTire, const float timeSpan);
     void getUpdatedGlobalState();
-    dVector applyTireLoad(SuspensionTire & sTire, const TireRayCast & tireCast, const dFloat timeSpan);
-    dVector applyTireForce(const Tire * t);
+    dVector applyTireLoad(SuspensionTire & sTire, const TireRayCast & tireCast, const float timeSpan);
+    dVector applyTireForce(const Tire *t);
     dVector applyOmegaFriction(SuspensionTire & sTire);
     dVector applyTireFriction(SuspensionTire & sTire);
-    dFloat getTireMassLoad(const SuspensionTire & sTire);
+    float getTireMassLoad(const SuspensionTire & sTire);
 };
 
 #endif /* BASECAR_H_ */

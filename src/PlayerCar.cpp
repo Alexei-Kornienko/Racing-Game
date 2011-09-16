@@ -10,15 +10,15 @@
 PlayerCar::PlayerCar(GameController *controller) : Car(controller)
 {
 	// add camera
-//	this->camera = this->controller->getSmgr()->addCameraSceneNode(
-//		this->carNode,
-//		vector3df(0,3,-5),
-//		vector3df(0,0,0)
+	this->camera = this->controller->getSmgr()->addCameraSceneNode(
+		this->carNode,
+		vector3df(0,5,-5),
+		vector3df(0,0,0)
+	);
+//	this->camera = this->controller->getSmgr()->addCameraSceneNodeFPS(
+//		0,100.0f,0.01f
 //	);
-	// add camera
-	this->camera = this->controller->getSmgr()->addCameraSceneNodeFPS(0,100.0f,0.01f);
-	this->camera->setPosition(core::vector3df(0,10,-10));
-	this->camera->setTarget(core::vector3df(0,0,0));
+	this->camera->setPosition(core::vector3df(0,5,-7));
 	this->camera->setFarValue(100.0f);
 }
 
@@ -45,7 +45,7 @@ void PlayerCar::update(dFloat timeSpan)
 		this->centerWheels();
 	}
 	Car::update(timeSpan);
-	//this->camera->setTarget(this->carNode->getPosition());
+	this->camera->setTarget(this->carNode->getPosition());
 }
 
 ICameraSceneNode *PlayerCar::getCamera() const

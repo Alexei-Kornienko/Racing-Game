@@ -36,7 +36,7 @@ void AI_Car::update(dFloat timeSpan)
 		this->doTurnLeft();
 	}
 
-	if(targetVector.getLength() > 2 && fabs(this->getWheelsTurn() < 30)) {
+	if(targetVector.getLength() > 2 && fabs(this->getWheelsTurn()) < 30) {
 		this->doAccelerate();
 	} else {
 		if(this->getSpeed().getLength() > -2) {
